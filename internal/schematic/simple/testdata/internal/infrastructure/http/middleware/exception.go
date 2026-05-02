@@ -31,10 +31,18 @@ func ExceptionMiddleware(log ligo.Logger) ligo.Middleware {
 				return ctx.Forbidden()
 			case errors.Is(err, usecase.ErrNotFound):
 				return ctx.NotFound()
-			case errors.Is(err, ligo.ErrBadRequest):
-				return ctx.BadRequest()
 			case errors.As(err, &ve):
-				return ctx.UnprocessableEntity()
+				type fieldErr struct {
+					Tag   string `json:"tag"`
+					Param string `json:"param,omitempty"`
+				}
+				fields := make(map[string][]fieldErr, len(ve))
+				for _, fe := range ve {
+					fields[fe.Field()] = append(fields[fe.Field()], fieldErr{Tag: fe.Tag(), Param: fe.Param()})
+				}
+				return ctx.JSON(422, map[string]any{"errors": fields})
+			case errors.Is(err, ligo.ErrBadRequest):
+				return ctx.BadRequest(err.Error())
 			case errors.Is(err, usecase.ErrValidation):
 				return ctx.BadRequest()
 			default:
