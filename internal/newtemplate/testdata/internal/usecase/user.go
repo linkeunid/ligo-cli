@@ -19,7 +19,7 @@ func NewUserUseCase(repo repository.UserRepository, log ligo.Logger) *UserUseCas
 }
 
 // GetUserByID retrieves a user by ID.
-func (uc *UserUseCase) GetUserByID(id string) (*entity.User, error) {
+func (uc *UserUseCase) GetUserByID(id int) (*entity.User, error) {
 	user, found := uc.repo.FindByID(id)
 	if !found {
 		return nil, ErrNotFound
@@ -43,11 +43,10 @@ func (uc *UserUseCase) CreateUser(input dto.CreateUserInput) (*entity.User, erro
 }
 
 // UpdateUser updates an existing user.
-func (uc *UserUseCase) UpdateUser(id string, input dto.UpdateUserInput) (*entity.User, error) {
+func (uc *UserUseCase) UpdateUser(id int, input dto.UpdateUserInput) (*entity.User, error) {
 	name := input.Name
 	email := input.Email
 
-	// Preserve existing values for partial updates
 	if name == "" || email == "" {
 		existing, found := uc.repo.FindByID(id)
 		if !found {
@@ -71,7 +70,7 @@ func (uc *UserUseCase) UpdateUser(id string, input dto.UpdateUserInput) (*entity
 }
 
 // DeleteUser deletes a user by ID.
-func (uc *UserUseCase) DeleteUser(id string) error {
+func (uc *UserUseCase) DeleteUser(id int) error {
 	if !uc.repo.Delete(id) {
 		return ErrNotFound
 	}

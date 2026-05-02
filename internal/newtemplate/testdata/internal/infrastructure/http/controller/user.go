@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"strconv"
+
 	"github.com/linkeunid/ligo"
 	infraauth "{{.ModulePath}}/internal/infrastructure/auth"
 	"{{.ModulePath}}/internal/infrastructure/http/middleware"
@@ -72,7 +74,7 @@ func (c *UserController) GetAllUsers(ctx ligo.Context) error {
 
 // GetUserByID handles GET /users/:id
 func (c *UserController) GetUserByID(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	user, err := c.userUseCase.GetUserByID(id)
 	if err != nil {
 		return err
@@ -92,7 +94,7 @@ func (c *UserController) CreateUser(ctx ligo.Context) error {
 
 // UpdateUser handles PUT /users/:id
 func (c *UserController) UpdateUser(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	input := ligo.ValidatedBody[dto.UpdateUserInput](ctx)
 	user, err := c.userUseCase.UpdateUser(id, *input)
 	if err != nil {
@@ -103,7 +105,7 @@ func (c *UserController) UpdateUser(ctx ligo.Context) error {
 
 // DeleteUser handles DELETE /users/:id
 func (c *UserController) DeleteUser(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	if err := c.userUseCase.DeleteUser(id); err != nil {
 		return err
 	}

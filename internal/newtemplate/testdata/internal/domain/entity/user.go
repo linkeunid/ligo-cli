@@ -1,5 +1,7 @@
 package entity
 
+import "strconv"
+
 // Role constants for user roles.
 const (
 	RoleAdmin = "admin"
@@ -9,15 +11,15 @@ const (
 // User represents a user entity in the domain layer.
 // Contains only business data and behavior, no external dependencies.
 type User struct {
-	ID    string
+	ID    int
 	Name  string
 	Email string
 	Role  string
 }
 
-// GetID returns the user ID (implements service.User).
+// GetID returns the user ID as string (implements service.User).
 func (u *User) GetID() string {
-	return u.ID
+	return strconv.Itoa(u.ID)
 }
 
 // GetName returns the user name (implements service.User).

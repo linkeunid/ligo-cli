@@ -69,13 +69,13 @@ func (c *FileController) Upload(ctx ligo.Context) error {
 		"id":       savedFile.ID,
 		"filename": savedFile.Name,
 		"size":     savedFile.Size,
-		"url":      fmt.Sprintf("/files/%s", savedFile.ID),
+		"url":      fmt.Sprintf("/files/%d", savedFile.ID),
 	})
 }
 
 // Download handles GET /files/:id
 func (c *FileController) Download(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 
 	file, err := c.fileUseCase.GetFile(id)
 	if err != nil {
@@ -105,7 +105,7 @@ func (c *FileController) ListFiles(ctx ligo.Context) error {
 			"id":       f.ID,
 			"filename": f.Name,
 			"size":     f.Size,
-			"url":      fmt.Sprintf("/files/%s", f.ID),
+			"url":      fmt.Sprintf("/files/%d", f.ID),
 		}
 	}
 
@@ -117,7 +117,7 @@ func (c *FileController) ListFiles(ctx ligo.Context) error {
 
 // DeleteFile handles DELETE /files/:id
 func (c *FileController) DeleteFile(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 
 	if err := c.fileUseCase.DeleteFile(id); err != nil {
 		return err

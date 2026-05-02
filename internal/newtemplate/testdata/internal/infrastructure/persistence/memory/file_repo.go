@@ -16,12 +16,12 @@ import (
 // FileRepository is an in-memory implementation of repository.FileRepository.
 // Metadata is stored in a ligo-memory Store; file content is written to disk.
 type FileRepository struct {
-	store *ligomemory.Store[string, *entity.File]
+	store *ligomemory.Store[int, *entity.File]
 	dir   string
 }
 
 // NewFileRepository creates a new in-memory file repository.
-func NewFileRepository(dir string, store *ligomemory.Store[string, *entity.File]) repository.FileRepository {
+func NewFileRepository(dir string, store *ligomemory.Store[int, *entity.File]) repository.FileRepository {
 	os.MkdirAll(dir, 0755)
 	return &FileRepository{store: store, dir: dir}
 }
@@ -32,8 +32,8 @@ func (r *FileRepository) Save(file io.Reader, filename string) (*entity.File, er
 		return nil, err
 	}
 
-	id := newUUID()
-	path := filepath.Join(r.dir, id+"_"+filename)
+	id := nextID()
+	path := filepath.Join(r.dir, fmt.Sprintf("%d_%s", id, filename))
 
 	if err := os.WriteFile(path, content, 0644); err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (r *FileRepository) Save(file io.Reader, filename string) (*entity.File, er
 	return fileEntity, nil
 }
 
-func (r *FileRepository) FindByID(id string) (*entity.File, bool) {
+func (r *FileRepository) FindByID(id int) (*entity.File, bool) {
 	return r.store.Get(id)
 }
 
@@ -64,7 +64,7 @@ func (r *FileRepository) FindAll() []*entity.File {
 	return r.store.All()
 }
 
-func (r *FileRepository) Delete(id string) error {
+func (r *FileRepository) Delete(id int) error {
 	file, found := r.store.Get(id)
 	if !found {
 		return fmt.Errorf("file not found")

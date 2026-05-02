@@ -24,7 +24,7 @@ func (uc *{{.Pascal}}UseCase) GetAll{{.Pascal}}s() []*entity.{{.Pascal}} {
 }
 
 // Get{{.Pascal}}ByID retrieves a {{.Kebab}} by ID.
-func (uc *{{.Pascal}}UseCase) Get{{.Pascal}}ByID(id string) (*entity.{{.Pascal}}, error) {
+func (uc *{{.Pascal}}UseCase) Get{{.Pascal}}ByID(id int) (*entity.{{.Pascal}}, error) {
 	item, found := uc.repo.FindByID(id)
 	if !found {
 		return nil, ErrNotFound
@@ -40,7 +40,7 @@ func (uc *{{.Pascal}}UseCase) Create{{.Pascal}}(input dto.Create{{.Pascal}}Input
 }
 
 // Update{{.Pascal}} updates an existing {{.Kebab}}.
-func (uc *{{.Pascal}}UseCase) Update{{.Pascal}}(id string, input dto.Update{{.Pascal}}Input) (*entity.{{.Pascal}}, error) {
+func (uc *{{.Pascal}}UseCase) Update{{.Pascal}}(id int, input dto.Update{{.Pascal}}Input) (*entity.{{.Pascal}}, error) {
 	item, updated := uc.repo.Update(id, input.Name)
 	if !updated {
 		return nil, ErrNotFound
@@ -50,7 +50,7 @@ func (uc *{{.Pascal}}UseCase) Update{{.Pascal}}(id string, input dto.Update{{.Pa
 }
 
 // Delete{{.Pascal}} deletes a {{.Kebab}} by ID.
-func (uc *{{.Pascal}}UseCase) Delete{{.Pascal}}(id string) error {
+func (uc *{{.Pascal}}UseCase) Delete{{.Pascal}}(id int) error {
 	if !uc.repo.Delete(id) {
 		return ErrNotFound
 	}

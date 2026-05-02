@@ -14,7 +14,7 @@ import (
 func UserModule() ligo.Module {
 	return ligo.NewModule("user",
 		ligo.Providers(
-			ligomemory.Provider[string, *entity.User](),
+			ligomemory.Provider[int, *entity.User](),
 			ligo.Factory[repository.UserRepository](memory.NewUserRepository),
 			ligo.Factory[*usecase.UserUseCase](usecase.NewUserUseCase),
 		),

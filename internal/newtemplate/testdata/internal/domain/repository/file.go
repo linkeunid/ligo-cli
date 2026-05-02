@@ -12,7 +12,7 @@ type FileRepository interface {
 	Save(file io.Reader, filename string) (*entity.File, error)
 
 	// FindByID retrieves file metadata by ID.
-	FindByID(id string) (*entity.File, bool)
+	FindByID(id int) (*entity.File, bool)
 
 	// GetContent returns a reader for the file content.
 	GetContent(path string) (io.ReadCloser, error)
@@ -21,5 +21,5 @@ type FileRepository interface {
 	FindAll() []*entity.File
 
 	// Delete removes a file by ID.
-	Delete(id string) error
+	Delete(id int) error
 }

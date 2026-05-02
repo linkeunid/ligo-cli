@@ -15,8 +15,8 @@ import (
 func FileModule() ligo.Module {
 	return ligo.NewModule("file",
 		ligo.Providers(
-			ligomemory.Provider[string, *entity.File](),
-			ligo.Factory[repository.FileRepository](func(cfg *config.Config, store *ligomemory.Store[string, *entity.File]) repository.FileRepository {
+			ligomemory.Provider[int, *entity.File](),
+			ligo.Factory[repository.FileRepository](func(cfg *config.Config, store *ligomemory.Store[int, *entity.File]) repository.FileRepository {
 				return memory.NewFileRepository(cfg.UploadDir, store)
 			}),
 			ligo.Factory[*usecase.FileUseCase](usecase.NewFileUseCase),

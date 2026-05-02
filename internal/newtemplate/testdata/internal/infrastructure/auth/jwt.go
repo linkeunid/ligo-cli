@@ -38,14 +38,14 @@ func (j *JWTAuth) ValidateToken(token string) (service.User, error) {
 	switch role {
 	case "admin":
 		return &entity.User{
-			ID:    "550e8400-e29b-41d4-a716-446655440003",
+			ID:    3,
 			Name:  "Admin User",
 			Email: "admin@example.com",
 			Role:  entity.RoleAdmin,
 		}, nil
 	case "user":
 		return &entity.User{
-			ID:    "550e8400-e29b-41d4-a716-446655440001",
+			ID:    1,
 			Name:  "Regular User",
 			Email: "user@example.com",
 			Role:  entity.RoleUser,

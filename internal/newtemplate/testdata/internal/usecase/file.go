@@ -38,7 +38,7 @@ func (uc *FileUseCase) UploadFile(file io.Reader, filename string) (*entity.File
 }
 
 // GetFile retrieves file metadata by ID.
-func (uc *FileUseCase) GetFile(id string) (*entity.File, error) {
+func (uc *FileUseCase) GetFile(id int) (*entity.File, error) {
 	file, found := uc.repo.FindByID(id)
 	if !found {
 		return nil, ErrNotFound
@@ -57,7 +57,7 @@ func (uc *FileUseCase) ListFiles() []*entity.File {
 }
 
 // DeleteFile deletes a file by ID.
-func (uc *FileUseCase) DeleteFile(id string) error {
+func (uc *FileUseCase) DeleteFile(id int) error {
 	if err := uc.repo.Delete(id); err != nil {
 		return err
 	}

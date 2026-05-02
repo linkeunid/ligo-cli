@@ -9,7 +9,7 @@ import (
 type UserRepository interface {
 	// FindByID retrieves a user by ID.
 	// Returns the user and true if found, nil and false otherwise.
-	FindByID(id string) (*entity.User, bool)
+	FindByID(id int) (*entity.User, bool)
 
 	// FindAll returns all users.
 	FindAll() []*entity.User
@@ -19,9 +19,9 @@ type UserRepository interface {
 
 	// Update updates an existing user.
 	// Returns the updated user and true if successful, nil and false if not found.
-	Update(id, name, email string) (*entity.User, bool)
+	Update(id int, name, email string) (*entity.User, bool)
 
 	// Delete removes a user by ID.
 	// Returns true if deleted, false if not found.
-	Delete(id string) bool
+	Delete(id int) bool
 }

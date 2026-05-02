@@ -4,9 +4,9 @@ import "{{.ModulePath}}/internal/domain/entity"
 
 // {{.Pascal}}Repository defines the interface for {{.Kebab}} data access.
 type {{.Pascal}}Repository interface {
-	FindByID(id string) (*entity.{{.Pascal}}, bool)
+	FindByID(id int) (*entity.{{.Pascal}}, bool)
 	FindAll() []*entity.{{.Pascal}}
 	Create(name string) *entity.{{.Pascal}}
-	Update(id, name string) (*entity.{{.Pascal}}, bool)
-	Delete(id string) bool
+	Update(id int, name string) (*entity.{{.Pascal}}, bool)
+	Delete(id int) bool
 }

@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"strconv"
+
 	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/infrastructure/http/middleware"
 	"{{.ModulePath}}/internal/infrastructure/http/presenter"
@@ -46,7 +48,7 @@ func (c *{{.Pascal}}Controller) GetAll{{.Pascal}}s(ctx ligo.Context) error {
 }
 
 func (c *{{.Pascal}}Controller) Get{{.Pascal}}ByID(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	item, err := c.uc.Get{{.Pascal}}ByID(id)
 	if err != nil {
 		return err
@@ -64,7 +66,7 @@ func (c *{{.Pascal}}Controller) Create{{.Pascal}}(ctx ligo.Context) error {
 }
 
 func (c *{{.Pascal}}Controller) Update{{.Pascal}}(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	input := ligo.ValidatedBody[dto.Update{{.Pascal}}Input](ctx)
 	item, err := c.uc.Update{{.Pascal}}(id, *input)
 	if err != nil {
@@ -74,7 +76,7 @@ func (c *{{.Pascal}}Controller) Update{{.Pascal}}(ctx ligo.Context) error {
 }
 
 func (c *{{.Pascal}}Controller) Delete{{.Pascal}}(ctx ligo.Context) error {
-	id := ctx.Param("id")
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	if err := c.uc.Delete{{.Pascal}}(id); err != nil {
 		return err
 	}

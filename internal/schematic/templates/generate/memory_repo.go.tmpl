@@ -8,15 +8,15 @@ import (
 
 // {{.Pascal}}Repository is an in-memory implementation of repository.{{.Pascal}}Repository.
 type {{.Pascal}}Repository struct {
-	store *ligomemory.Store[string, *entity.{{.Pascal}}]
+	store *ligomemory.Store[int, *entity.{{.Pascal}}]
 }
 
 // New{{.Pascal}}Repository creates a new in-memory {{.Pascal}}Repository.
-func New{{.Pascal}}Repository(store *ligomemory.Store[string, *entity.{{.Pascal}}]) repository.{{.Pascal}}Repository {
+func New{{.Pascal}}Repository(store *ligomemory.Store[int, *entity.{{.Pascal}}]) repository.{{.Pascal}}Repository {
 	return &{{.Pascal}}Repository{store: store}
 }
 
-func (r *{{.Pascal}}Repository) FindByID(id string) (*entity.{{.Pascal}}, bool) {
+func (r *{{.Pascal}}Repository) FindByID(id int) (*entity.{{.Pascal}}, bool) {
 	return r.store.Get(id)
 }
 
@@ -25,13 +25,13 @@ func (r *{{.Pascal}}Repository) FindAll() []*entity.{{.Pascal}} {
 }
 
 func (r *{{.Pascal}}Repository) Create(name string) *entity.{{.Pascal}} {
-	id := newUUID()
+	id := nextID()
 	item := &entity.{{.Pascal}}{ID: id, Name: name}
 	r.store.Set(id, item)
 	return item
 }
 
-func (r *{{.Pascal}}Repository) Update(id, name string) (*entity.{{.Pascal}}, bool) {
+func (r *{{.Pascal}}Repository) Update(id int, name string) (*entity.{{.Pascal}}, bool) {
 	_, found := r.store.Get(id)
 	if !found {
 		return nil, false
@@ -41,6 +41,6 @@ func (r *{{.Pascal}}Repository) Update(id, name string) (*entity.{{.Pascal}}, bo
 	return updated, true
 }
 
-func (r *{{.Pascal}}Repository) Delete(id string) bool {
+func (r *{{.Pascal}}Repository) Delete(id int) bool {
 	return r.store.Delete(id)
 }

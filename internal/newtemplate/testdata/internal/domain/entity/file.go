@@ -4,7 +4,7 @@ import "time"
 
 // File represents a file entity in the domain layer.
 type File struct {
-	ID          string
+	ID          int
 	Name        string
 	ContentType string
 	Size        int64
