@@ -32,7 +32,7 @@ func Register(s Schematic) {
 func Lookup(name string) (Schematic, error) {
 	s, ok := registry[name]
 	if !ok {
-		return nil, fmt.Errorf("unknown schematic %q — available: entity, dto, usecase, repository, controller, module, resource", name)
+		return nil, fmt.Errorf("unknown schematic %q — available: simple, resource, module, controller, usecase, entity, repository, dto", name)
 	}
 	return s, nil
 }

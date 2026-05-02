@@ -1,0 +1,37 @@
+package controller
+
+import (
+	"github.com/linkeunid/ligo"
+	"{{.ModulePath}}/internal/infrastructure/http/middleware"
+	"{{.ModulePath}}/internal/usecase"
+)
+
+// {{.Pascal}}Controller handles HTTP requests for {{.Kebab}}.
+type {{.Pascal}}Controller struct {
+	uc          *usecase.{{.Pascal}}UseCase
+	log         ligo.Logger
+	exceptionMW ligo.Middleware
+	loggingMW   ligo.Middleware
+}
+
+// New{{.Pascal}}Controller creates a new {{.Pascal}}Controller.
+func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, log ligo.Logger) *{{.Pascal}}Controller {
+	return &{{.Pascal}}Controller{
+		uc:          uc,
+		log:         log,
+		exceptionMW: middleware.ExceptionMiddleware(log),
+		loggingMW:   middleware.LoggingMiddleware(log),
+	}
+}
+
+// Routes registers all routes for the {{.Pascal}}Controller.
+func (c *{{.Pascal}}Controller) Routes(r ligo.Router) {
+	cr := ligo.NewChainRouter(r.Group("/{{.PluralKebab}}"))
+	cr.Use(c.exceptionMW, c.loggingMW)
+
+	cr.GET("", c.Hello).Handle()
+}
+
+func (c *{{.Pascal}}Controller) Hello(ctx ligo.Context) error {
+	return ctx.OK(c.uc.Hello())
+}

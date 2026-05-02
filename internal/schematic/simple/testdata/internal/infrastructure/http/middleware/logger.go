@@ -1,0 +1,33 @@
+package middleware
+
+import (
+	"time"
+
+	"github.com/linkeunid/ligo"
+)
+
+// LoggingMiddleware logs request details.
+func LoggingMiddleware(log ligo.Logger) ligo.Middleware {
+	return func(next ligo.HandlerFunc) ligo.HandlerFunc {
+		return func(ctx ligo.Context) error {
+			start := time.Now()
+
+			err := next(ctx)
+
+			fields := []ligo.LoggerField{
+				{Key: "method", Value: ctx.Request().Method},
+				{Key: "path", Value: ctx.Request().URL.Path},
+				{Key: "duration_ms", Value: time.Since(start).Milliseconds()},
+			}
+
+			if err != nil {
+				fields = append(fields, ligo.LoggerField{Key: "error", Value: err.Error()})
+				log.Error("Request completed with error", fields...)
+			} else {
+				log.Debug("Request completed", fields...)
+			}
+
+			return err
+		}
+	}
+}

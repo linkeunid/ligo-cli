@@ -1,0 +1,17 @@
+package module
+
+import (
+	"github.com/linkeunid/ligo"
+	"{{.ModulePath}}/internal/infrastructure/http/controller"
+	"{{.ModulePath}}/internal/usecase"
+)
+
+// {{.Pascal}} returns the {{.Kebab}} module.
+func {{.Pascal}}() ligo.Module {
+	return ligo.NewModule("{{.Kebab}}",
+		ligo.Providers(
+			ligo.Factory[*usecase.{{.Pascal}}UseCase](usecase.New{{.Pascal}}UseCase),
+		),
+		ligo.Controllers(controller.New{{.Pascal}}Controller),
+	)
+}

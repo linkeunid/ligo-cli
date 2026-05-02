@@ -36,6 +36,15 @@ var memoryRepoTmpl string
 //go:embed templates/generate/module.go.tmpl
 var moduleTmpl string
 
+//go:embed templates/generate/simple_usecase.go.tmpl
+var simpleUsecaseTmpl string
+
+//go:embed templates/generate/simple_controller.go.tmpl
+var simpleControllerTmpl string
+
+//go:embed templates/generate/simple_module.go.tmpl
+var simpleModuleTmpl string
+
 // TemplateData is the data passed to every generate template.
 type TemplateData struct {
 	ModulePath  string

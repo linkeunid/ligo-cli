@@ -10,12 +10,14 @@ import (
 	"text/template"
 
 	"github.com/linkeunid/ligo-cli/internal/newtemplate"
+	"github.com/linkeunid/ligo-cli/internal/schematic/simple"
 	"github.com/spf13/cobra"
 )
 
 var (
 	newModuleFlag string
 	noGitFlag     bool
+	fullBoilerplate bool
 	preRelease    bool
 )
 
@@ -30,6 +32,7 @@ var newCmd = &cobra.Command{
 func init() {
 	newCmd.Flags().StringVar(&newModuleFlag, "module", "", "Go module path (default: github.com/<project-name>)")
 	newCmd.Flags().BoolVar(&noGitFlag, "no-git", false, "Skip git init")
+	newCmd.Flags().BoolVar(&fullBoilerplate, "full", false, "Scaffold full boilerplate (users, files, auth) instead of the minimal hello-world template")
 	newCmd.Flags().BoolVar(&preRelease, "pre-release", false, "Use local ../ligo and ../ligo-memory replace directives (for pre-release development)")
 	rootCmd.AddCommand(newCmd)
 }
@@ -47,7 +50,12 @@ func runNew(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err := fs.WalkDir(newtemplate.FS, "testdata", func(path string, d fs.DirEntry, err error) error {
+	templateFS := simple.FS
+	if fullBoilerplate {
+		templateFS = newtemplate.FS
+	}
+
+	err := fs.WalkDir(templateFS, "testdata", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -56,7 +64,6 @@ func runNew(cmd *cobra.Command, args []string) error {
 		if rel == "" || rel == "testdata" {
 			return nil
 		}
-		// Restore .tmpl suffix stripped from go.mod and go.sum to avoid module boundary issues
 		rel = strings.TrimSuffix(rel, ".tmpl")
 		dest := filepath.Join(projectName, rel)
 
@@ -64,7 +71,7 @@ func runNew(cmd *cobra.Command, args []string) error {
 			return os.MkdirAll(dest, 0755)
 		}
 
-		content, err := newtemplate.FS.ReadFile(path)
+		content, err := templateFS.ReadFile(path)
 		if err != nil {
 			return err
 		}

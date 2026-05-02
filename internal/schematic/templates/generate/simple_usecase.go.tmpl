@@ -1,0 +1,14 @@
+package usecase
+
+// {{.Pascal}}UseCase contains business logic for {{.Kebab}} operations.
+type {{.Pascal}}UseCase struct{}
+
+// New{{.Pascal}}UseCase creates a new {{.Pascal}}UseCase.
+func New{{.Pascal}}UseCase() *{{.Pascal}}UseCase {
+	return &{{.Pascal}}UseCase{}
+}
+
+// Hello returns a hello world response.
+func (uc *{{.Pascal}}UseCase) Hello() map[string]string {
+	return map[string]string{"message": "Hello, World!"}
+}

@@ -1,0 +1,17 @@
+package module
+
+import (
+	"github.com/linkeunid/ligo"
+	"{{.ModulePath}}/internal/infrastructure/http/controller"
+	"{{.ModulePath}}/internal/usecase"
+)
+
+// Hello returns the hello module.
+func Hello() ligo.Module {
+	return ligo.NewModule("hello",
+		ligo.Providers(
+			ligo.Factory[*usecase.HelloUseCase](usecase.NewHelloUseCase),
+		),
+		ligo.Controllers(controller.NewHelloController),
+	)
+}
