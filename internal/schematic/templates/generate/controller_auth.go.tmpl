@@ -22,10 +22,10 @@ type {{.Pascal}}Controller struct {
 }
 
 // New{{.Pascal}}Controller creates a new {{.Pascal}}Controller.
-func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, jwt *infraauth.JWTAuth, log ligo.Logger) *{{.Pascal}}Controller {
+func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, pre *presenter.{{.Pascal}}Presenter, jwt *infraauth.JWTAuth, log ligo.Logger) *{{.Pascal}}Controller {
 	return &{{.Pascal}}Controller{
 		uc:          uc,
-		presenter:   presenter.New{{.Pascal}}Presenter(),
+		presenter:   pre,
 		log:         log,
 		authGuard:   infraauth.AuthGuard(jwt),
 		exceptionMW: middleware.ExceptionMiddleware(log),

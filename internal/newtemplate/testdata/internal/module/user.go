@@ -6,6 +6,7 @@ import (
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/repository"
 	"{{.ModulePath}}/internal/infrastructure/http/controller"
+	"{{.ModulePath}}/internal/infrastructure/http/presenter"
 	"{{.ModulePath}}/internal/infrastructure/persistence/memory"
 	"{{.ModulePath}}/internal/usecase"
 )
@@ -15,6 +16,7 @@ func UserModule() ligo.Module {
 	return ligo.NewModule("user",
 		ligo.Providers(
 			ligomemory.Provider[int, *entity.User](),
+			ligo.Factory[*presenter.UserPresenter](presenter.NewUserPresenter),
 			ligo.Factory[repository.UserRepository](memory.NewUserRepository),
 			ligo.Factory[*usecase.UserUseCase](usecase.NewUserUseCase),
 		),

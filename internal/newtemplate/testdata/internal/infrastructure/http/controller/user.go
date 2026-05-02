@@ -24,10 +24,10 @@ type UserController struct {
 }
 
 // NewUserController creates a new user controller.
-func NewUserController(uc *usecase.UserUseCase, jwt *infraauth.JWTAuth, log ligo.Logger) *UserController {
+func NewUserController(uc *usecase.UserUseCase, pre *presenter.UserPresenter, jwt *infraauth.JWTAuth, log ligo.Logger) *UserController {
 	return &UserController{
 		userUseCase: uc,
-		presenter:   presenter.NewUserPresenter(),
+		presenter:   pre,
 		log:         log,
 		authGuard:   infraauth.AuthGuard(jwt),
 		adminGuard:  infraauth.AdminGuard(),

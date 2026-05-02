@@ -20,10 +20,10 @@ type {{.Pascal}}Controller struct {
 }
 
 // New{{.Pascal}}Controller creates a new {{.Pascal}}Controller.
-func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, log ligo.Logger) *{{.Pascal}}Controller {
+func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, pre *presenter.{{.Pascal}}Presenter, log ligo.Logger) *{{.Pascal}}Controller {
 	return &{{.Pascal}}Controller{
 		uc:          uc,
-		presenter:   presenter.New{{.Pascal}}Presenter(),
+		presenter:   pre,
 		log:         log,
 		exceptionMW: middleware.ExceptionMiddleware(log),
 		loggingMW:   middleware.LoggingMiddleware(log),

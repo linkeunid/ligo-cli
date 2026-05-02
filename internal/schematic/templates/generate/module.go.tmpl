@@ -6,6 +6,7 @@ import (
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/repository"
 	"{{.ModulePath}}/internal/infrastructure/http/controller"
+	"{{.ModulePath}}/internal/infrastructure/http/presenter"
 	"{{.ModulePath}}/internal/infrastructure/persistence/memory"
 	"{{.ModulePath}}/internal/usecase"
 )
@@ -15,6 +16,7 @@ func {{.Pascal}}Module() ligo.Module {
 	return ligo.NewModule("{{.Kebab}}",
 		ligo.Providers(
 			ligomemory.Provider[int, *entity.{{.Pascal}}](),
+			ligo.Factory[*presenter.{{.Pascal}}Presenter](presenter.New{{.Pascal}}Presenter),
 			ligo.Factory[repository.{{.Pascal}}Repository](memory.New{{.Pascal}}Repository),
 			ligo.Factory[*usecase.{{.Pascal}}UseCase](usecase.New{{.Pascal}}UseCase),
 		),
