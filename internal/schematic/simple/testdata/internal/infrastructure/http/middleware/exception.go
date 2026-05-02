@@ -2,11 +2,18 @@ package middleware
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/usecase"
 )
+
+type fieldErr struct {
+	Field string `json:"field"`
+	Tag   string `json:"tag"`
+	Param string `json:"param,omitempty"`
+}
 
 // ExceptionMiddleware handles errors and converts them to HTTP responses.
 func ExceptionMiddleware(log ligo.Logger) ligo.Middleware {
@@ -32,15 +39,11 @@ func ExceptionMiddleware(log ligo.Logger) ligo.Middleware {
 			case errors.Is(err, usecase.ErrNotFound):
 				return ctx.NotFound()
 			case errors.As(err, &ve):
-				type fieldErr struct {
-					Tag   string `json:"tag"`
-					Param string `json:"param,omitempty"`
-				}
-				fields := make(map[string][]fieldErr, len(ve))
+				errs := make([]fieldErr, 0, len(ve))
 				for _, fe := range ve {
-					fields[fe.Field()] = append(fields[fe.Field()], fieldErr{Tag: fe.Tag(), Param: fe.Param()})
+					errs = append(errs, fieldErr{Field: fe.Field(), Tag: fe.Tag(), Param: fe.Param()})
 				}
-				return ctx.JSON(422, map[string]any{"errors": fields})
+				return ctx.JSON(http.StatusUnprocessableEntity, map[string]any{"errors": errs})
 			case errors.Is(err, ligo.ErrBadRequest):
 				return ctx.BadRequest(err.Error())
 			case errors.Is(err, usecase.ErrValidation):
