@@ -26,7 +26,7 @@ func NewHelloController(uc *usecase.HelloUseCase, log ligo.Logger) *HelloControl
 
 // Routes registers all routes for the HelloController.
 func (c *HelloController) Routes(r ligo.Router) {
-	cr := ligo.NewChainRouter(r.Group("/api"))
+	cr := ligo.NewChainRouter(r)
 	cr.Use(c.exceptionMW, c.loggingMW)
 
 	cr.GET("", c.Hello).Handle()

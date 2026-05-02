@@ -18,11 +18,17 @@ func (s *usecaseSchematic) Run(ctx Context) error {
 	d := makeData(ctx)
 	n := templateutil.NormalizeName(ctx.Name)
 
-	if err := (&dtoSchematic{}).Run(ctx); err != nil {
-		return err
+	if ctx.Full {
+		if err := (&dtoSchematic{}).Run(ctx); err != nil {
+			return err
+		}
+		return templateutil.RenderToFile(usecaseTmpl,
+			filepath.Join(ctx.WorkDir, "internal", "usecase", fmt.Sprintf("%s.go", n.Snake)),
+			d, ctx.DryRun,
+		)
 	}
 
-	return templateutil.RenderToFile(usecaseTmpl,
+	return templateutil.RenderToFile(simpleUsecaseTmpl,
 		filepath.Join(ctx.WorkDir, "internal", "usecase", fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,
 	)

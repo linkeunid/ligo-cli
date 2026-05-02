@@ -35,23 +35,28 @@ Writes the full Ligo boilerplate tree into `./my-app/`, runs `go mod tidy`, and 
 
 ### Schematics
 
-| Schematic | Alias | Files generated |
-|-----------|-------|----------------|
-| `resource` | `res` | All layers below, plus prompts to register the module |
-| `module` | `mo` | `internal/module/<name>.go` |
-| `controller` | `co` | `internal/infrastructure/http/controller/<name>.go` |
-| `usecase` | `uc` | `internal/usecase/<name>.go` + DTOs |
-| `entity` | `en` | `internal/domain/entity/<name>.go` + repository interface |
-| `repository` | `rep` | `internal/infrastructure/persistence/memory/<name>_repo.go` |
-| `dto` | `dto` | `internal/usecase/dto/create_<name>.go` + `update_<name>.go` |
+| Schematic | Alias | Default (simple) | `--full` |
+|-----------|-------|-----------------|---------|
+| `resource` | `res` | All simple layers + register prompt | All full layers + register prompt |
+| `module` | `mo` | `internal/module/<name>.go` (simple) | `internal/module/<name>.go` (with repo wiring) |
+| `controller` | `co` | `internal/infrastructure/http/controller/<name>.go` (simple) | Full controller with repo/presenter |
+| `usecase` | `uc` | `internal/usecase/<name>.go` (simple Hello) | Full usecase + DTOs |
+| `entity` | `en` | `internal/domain/entity/<name>.go` + repository interface | — |
+| `repository` | `rep` | `internal/infrastructure/persistence/memory/<name>_repo.go` | — |
+| `dto` | `dto` | `internal/usecase/dto/create_<name>.go` + `update_<name>.go` | — |
 
 ### Examples
 
 ```bash
-ligo g res product              # generate all layers for "product"
-ligo g res order --with-auth    # controller includes AuthGuard
-ligo g mo auth                  # module only
-ligo g co user                  # controller only
+ligo g co product               # simple controller (Hello endpoint)
+ligo g co product --full        # full controller with repo/presenter
+ligo g co order --full --with-auth  # full controller with AuthGuard
+ligo g uc product               # simple use case (Hello method)
+ligo g uc product --full        # full use case with DTOs
+ligo g mo product               # simple module
+ligo g mo product --full        # full module with repo wiring
+ligo g res product              # all simple layers
+ligo g res product --full       # all full layers
 ligo g res product --dry-run    # preview files without writing
 ```
 
@@ -59,7 +64,8 @@ ligo g res product --dry-run    # preview files without writing
 
 | Flag | Applies to | Description |
 |------|------------|-------------|
-| `--with-auth` | `resource`, `controller` | Wire `AuthGuard` into the generated controller |
+| `--full` | `resource`, `controller`, `usecase`, `module` | Generate full template with repo/DTOs instead of simple |
+| `--with-auth` | `controller` (with `--full`) | Wire `AuthGuard` into the generated controller |
 | `--dry-run` | all schematics | Print `CREATE`/`UPDATE` actions without touching the filesystem |
 
 ### Generated type names

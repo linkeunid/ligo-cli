@@ -18,9 +18,12 @@ func (s *controllerSchematic) Run(ctx Context) error {
 	d := makeData(ctx)
 	n := templateutil.NormalizeName(ctx.Name)
 
-	tmpl := controllerTmpl
-	if ctx.WithAuth {
-		tmpl = controllerAuthTmpl
+	tmpl := simpleControllerTmpl
+	if ctx.Full {
+		tmpl = controllerTmpl
+		if ctx.WithAuth {
+			tmpl = controllerAuthTmpl
+		}
 	}
 
 	return templateutil.RenderToFile(tmpl,

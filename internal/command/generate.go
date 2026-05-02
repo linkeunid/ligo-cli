@@ -11,6 +11,7 @@ import (
 
 var withAuth bool
 var dryRun bool
+var fullSchematic bool
 
 var generateCmd = &cobra.Command{
 	Use:     "generate <schematic> [name]",
@@ -21,8 +22,9 @@ var generateCmd = &cobra.Command{
 }
 
 func init() {
-	generateCmd.Flags().BoolVar(&withAuth, "with-auth", false, "Wire AuthGuard into generated controller")
+	generateCmd.Flags().BoolVar(&withAuth, "with-auth", false, "Wire AuthGuard into generated controller (requires --full)")
 	generateCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Preview files without writing them")
+	generateCmd.Flags().BoolVar(&fullSchematic, "full", false, "Generate full template with repo/DTOs")
 	rootCmd.AddCommand(generateCmd)
 }
 
@@ -50,6 +52,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		ModulePath: info.ModulePath,
 		WorkDir:    ".",
 		WithAuth:   withAuth,
+		Full:       fullSchematic,
 		DryRun:     dryRun,
 	})
 }

@@ -19,7 +19,12 @@ func (s *moduleSchematic) Run(ctx Context) error {
 	d := makeData(ctx)
 	n := templateutil.NormalizeName(ctx.Name)
 
-	if err := templateutil.RenderToFile(moduleTmpl,
+	tmpl := simpleModuleTmpl
+	if ctx.Full {
+		tmpl = moduleTmpl
+	}
+
+	if err := templateutil.RenderToFile(tmpl,
 		filepath.Join(ctx.WorkDir, "internal", "module", fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,
 	); err != nil {

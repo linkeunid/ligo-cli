@@ -8,6 +8,7 @@ type Context struct {
 	ModulePath string // from go.mod (e.g. "github.com/acme/my-app")
 	WorkDir    string // project root (cwd)
 	WithAuth   bool   // --with-auth flag
+	Full       bool   // --full flag (use full templates with repo/DTOs)
 	DryRun     bool   // --dry-run flag (print actions without writing files)
 }
 
@@ -32,7 +33,7 @@ func Register(s Schematic) {
 func Lookup(name string) (Schematic, error) {
 	s, ok := registry[name]
 	if !ok {
-		return nil, fmt.Errorf("unknown schematic %q — available: simple, resource, module, controller, usecase, entity, repository, dto", name)
+		return nil, fmt.Errorf("unknown schematic %q — available: resource, module (mo), controller (co), usecase (uc), entity, repository, dto, presenter", name)
 	}
 	return s, nil
 }
