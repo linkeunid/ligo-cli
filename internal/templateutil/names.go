@@ -56,10 +56,17 @@ func toPascal(words []string) string {
 	return b.String()
 }
 
-// pluralize appends "s" or "es" — sufficient for simple resource names.
+// pluralize returns a simple plural form for kebab-case resource names.
 func pluralize(s string) string {
-	if strings.HasSuffix(s, "s") {
-		return s + "es"
+	switch {
+	case strings.HasSuffix(s, "s"):
+		return s // already plural (products, users, orders)
+	case strings.HasSuffix(s, "y"):
+		return s[:len(s)-1] + "ies" // category → categories
+	case strings.HasSuffix(s, "x") || strings.HasSuffix(s, "z") ||
+		strings.HasSuffix(s, "ch") || strings.HasSuffix(s, "sh"):
+		return s + "es" // box → boxes, match → matches
+	default:
+		return s + "s"
 	}
-	return s + "s"
 }

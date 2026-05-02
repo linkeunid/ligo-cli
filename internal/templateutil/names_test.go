@@ -15,10 +15,13 @@ func TestNormalizeNames(t *testing.T) {
 		pluralKebab string
 	}{
 		{"product", "Product", "product", "product", "products"},
+		{"products", "Products", "products", "products", "products"},
 		{"order-item", "OrderItem", "order_item", "order-item", "order-items"},
 		{"OrderItem", "OrderItem", "order_item", "order-item", "order-items"},
 		{"order_item", "OrderItem", "order_item", "order-item", "order-items"},
 		{"userProfile", "UserProfile", "user_profile", "user-profile", "user-profiles"},
+		{"category", "Category", "category", "category", "categories"},
+		{"box", "Box", "box", "box", "boxes"},
 	}
 
 	for _, tc := range cases {
