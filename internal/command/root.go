@@ -21,17 +21,18 @@ func resolveVersion() string {
 }
 
 var rootCmd = &cobra.Command{
-	Use:     "ligo",
-	Short:   "Ligo framework CLI",
-	Long:    "A CLI for scaffolding and managing Ligo framework projects.",
-	Version: resolveVersion(),
-}
-
-func init() {
-	rootCmd.Flags().BoolP("version", "v", false, "Print the version number")
+	Use:   "ligo",
+	Short: "Ligo framework CLI",
+	Long:  "A CLI for scaffolding and managing Ligo framework projects.",
 }
 
 func Execute() {
+	rootCmd.Version = resolveVersion()
+	// Add -v shorthand to Cobra's auto-generated --version flag.
+	rootCmd.InitDefaultVersionFlag()
+	if f := rootCmd.Flags().Lookup("version"); f != nil {
+		f.Shorthand = "v"
+	}
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
