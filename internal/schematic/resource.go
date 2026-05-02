@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	"github.com/linkeunid/ligo-cli/internal/templateutil"
 )
 
 type resourceSchematic struct{}
@@ -31,7 +30,6 @@ func (s *resourceSchematic) Run(ctx Context) error {
 		ctx.WithAuth = withAuth
 	}
 
-	n := templateutil.NormalizeName(ctx.Name)
 	ctx.Full = true
 
 	for _, step := range []struct {
@@ -51,5 +49,5 @@ func (s *resourceSchematic) Run(ctx Context) error {
 		}
 	}
 
-	return askAndRegister(ctx, n.Pascal)
+	return nil
 }
