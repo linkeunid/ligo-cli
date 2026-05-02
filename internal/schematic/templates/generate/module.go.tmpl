@@ -10,8 +10,8 @@ import (
 	"{{.ModulePath}}/internal/usecase"
 )
 
-// {{.Pascal}} returns the {{.Kebab}} module.
-func {{.Pascal}}() ligo.Module {
+// {{.Pascal}}Module returns the {{.Kebab}} module.
+func {{.Pascal}}Module() ligo.Module {
 	return ligo.NewModule("{{.Kebab}}",
 		ligo.Providers(
 			ligomemory.Provider[string, *entity.{{.Pascal}}](),

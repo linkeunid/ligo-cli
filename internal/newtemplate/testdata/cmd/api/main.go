@@ -38,7 +38,7 @@ func main() {
 	// Global providers — available to all modules via DI
 	app.Provide(ligo.Value(cfg))
 
-	app.Register(module.Main())
+	app.Register(module.MainModule())
 
 	if err := app.Run(); err != nil {
 		if err != http.ErrServerClosed {

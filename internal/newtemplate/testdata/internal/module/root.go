@@ -6,7 +6,7 @@ import (
 )
 
 // Root returns the root API info module.
-func Root() ligo.Module {
+func RootModule() ligo.Module {
 	return ligo.NewModule("root",
 		ligo.Controllers(controller.NewRootController),
 	)

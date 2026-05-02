@@ -52,6 +52,6 @@ func askAndRegister(ctx Context, pascal string) error {
 	}
 
 	mainPath := filepath.Join(ctx.WorkDir, "internal", "module", "main.go")
-	insertion := fmt.Sprintf("\t\t\t%s(),\n", pascal)
+	insertion := fmt.Sprintf("\t\t\t%sModule(),\n", pascal)
 	return templateutil.PatchFile(mainPath, "\t\t),\n", insertion, ctx.DryRun)
 }

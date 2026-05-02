@@ -6,7 +6,7 @@ import (
 )
 
 // Health returns the health check module.
-func Health() ligo.Module {
+func HealthModule() ligo.Module {
 	return ligo.NewModule("health",
 		ligo.Controllers(controller.NewHealthController),
 	)

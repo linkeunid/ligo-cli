@@ -7,7 +7,7 @@ import (
 )
 
 // Hello returns the hello module.
-func Hello() ligo.Module {
+func HelloModule() ligo.Module {
 	return ligo.NewModule("hello",
 		ligo.Providers(
 			ligo.Factory[*usecase.HelloUseCase](usecase.NewHelloUseCase),

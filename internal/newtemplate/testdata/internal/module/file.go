@@ -12,7 +12,7 @@ import (
 )
 
 // File returns the file upload module.
-func File() ligo.Module {
+func FileModule() ligo.Module {
 	return ligo.NewModule("file",
 		ligo.Providers(
 			ligomemory.Provider[string, *entity.File](),

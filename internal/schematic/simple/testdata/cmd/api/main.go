@@ -35,7 +35,7 @@ func main() {
 		}),
 	)
 
-	app.Register(module.Main())
+	app.Register(module.MainModule())
 
 	if err := app.Run(); err != nil {
 		if err != http.ErrServerClosed {

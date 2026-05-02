@@ -11,7 +11,7 @@ import (
 )
 
 // User returns the user module.
-func User() ligo.Module {
+func UserModule() ligo.Module {
 	return ligo.NewModule("user",
 		ligo.Providers(
 			ligomemory.Provider[string, *entity.User](),
