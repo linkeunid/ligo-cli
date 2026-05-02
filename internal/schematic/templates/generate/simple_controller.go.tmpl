@@ -26,7 +26,7 @@ func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, log ligo.Logger) *
 
 // Routes registers all routes for the {{.Pascal}}Controller.
 func (c *{{.Pascal}}Controller) Routes(r ligo.Router) {
-	cr := ligo.NewChainRouter(r.Group("/{{.PluralKebab}}"))
+	cr := ligo.NewChainRouter(r.Group("/api"))
 	cr.Use(c.exceptionMW, c.loggingMW)
 
 	cr.GET("", c.Hello).Handle()
