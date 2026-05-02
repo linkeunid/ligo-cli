@@ -38,13 +38,13 @@ func (c *FileController) Routes(r ligo.Router) {
 	cr.POST("/upload", c.Upload).Handle()
 
 	cr.GET("/:id", c.Download).
-		Pipe(ligo.UUIDPipe("id")).
+		Pipe(ligo.ParseIntPipe("id")).
 		Handle()
 
 	cr.GET("", c.ListFiles).Handle()
 
 	cr.DELETE("/:id", c.DeleteFile).
-		Pipe(ligo.UUIDPipe("id")).
+		Pipe(ligo.ParseIntPipe("id")).
 		Handle()
 }
 

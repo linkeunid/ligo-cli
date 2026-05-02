@@ -34,10 +34,10 @@ func (c *{{.Pascal}}Controller) Routes(r ligo.Router) {
 	cr.Use(c.exceptionMW, c.loggingMW)
 
 	cr.GET("", c.GetAll{{.Pascal}}s).Handle()
-	cr.GET("/:id", c.Get{{.Pascal}}ByID).Pipe(ligo.UUIDPipe("id")).Handle()
+	cr.GET("/:id", c.Get{{.Pascal}}ByID).Pipe(ligo.ParseIntPipe("id")).Handle()
 	cr.POST("", c.Create{{.Pascal}}).Pipe(ligo.ValidationPipe(&dto.Create{{.Pascal}}Input{})).Handle()
-	cr.PUT("/:id", c.Update{{.Pascal}}).Pipe(ligo.UUIDPipe("id"), ligo.ValidationPipe(&dto.Update{{.Pascal}}Input{})).Handle()
-	cr.DELETE("/:id", c.Delete{{.Pascal}}).Pipe(ligo.UUIDPipe("id")).Handle()
+	cr.PUT("/:id", c.Update{{.Pascal}}).Pipe(ligo.ParseIntPipe("id"), ligo.ValidationPipe(&dto.Update{{.Pascal}}Input{})).Handle()
+	cr.DELETE("/:id", c.Delete{{.Pascal}}).Pipe(ligo.ParseIntPipe("id")).Handle()
 }
 
 func (c *{{.Pascal}}Controller) GetAll{{.Pascal}}s(ctx ligo.Context) error {

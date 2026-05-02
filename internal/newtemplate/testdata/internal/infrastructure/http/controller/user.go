@@ -44,7 +44,7 @@ func (c *UserController) Routes(r ligo.Router) {
 
 	cr.GET("/:id", c.GetUserByID).
 		Guard(c.authGuard).
-		Pipe(ligo.UUIDPipe("id")).
+		Pipe(ligo.ParseIntPipe("id")).
 		Handle()
 
 	cr.POST("", c.CreateUser).
@@ -54,13 +54,13 @@ func (c *UserController) Routes(r ligo.Router) {
 
 	cr.PUT("/:id", c.UpdateUser).
 		Guard(c.authGuard).
-		Pipe(ligo.UUIDPipe("id"), ligo.ValidationPipe(&dto.UpdateUserInput{})).
+		Pipe(ligo.ParseIntPipe("id"), ligo.ValidationPipe(&dto.UpdateUserInput{})).
 		Handle()
 
 	cr.DELETE("/:id", c.DeleteUser).
 		Guard(c.authGuard, c.adminGuard).
 		Use(c.auditMW).
-		Pipe(ligo.UUIDPipe("id")).
+		Pipe(ligo.ParseIntPipe("id")).
 		Handle()
 }
 
