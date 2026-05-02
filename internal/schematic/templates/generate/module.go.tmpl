@@ -1,0 +1,23 @@
+package module
+
+import (
+	"github.com/linkeunid/ligo"
+	ligomemory "github.com/linkeunid/ligo-memory"
+	"{{.ModulePath}}/internal/domain/entity"
+	"{{.ModulePath}}/internal/domain/repository"
+	"{{.ModulePath}}/internal/infrastructure/http/controller"
+	"{{.ModulePath}}/internal/infrastructure/persistence/memory"
+	"{{.ModulePath}}/internal/usecase"
+)
+
+// {{.Pascal}} returns the {{.Kebab}} module.
+func {{.Pascal}}() ligo.Module {
+	return ligo.NewModule("{{.Kebab}}",
+		ligo.Providers(
+			ligomemory.Provider[string, *entity.{{.Pascal}}](),
+			ligo.Factory[repository.{{.Pascal}}Repository](memory.New{{.Pascal}}Repository),
+			ligo.Factory[*usecase.{{.Pascal}}UseCase](usecase.New{{.Pascal}}UseCase),
+		),
+		ligo.Controllers(controller.New{{.Pascal}}Controller),
+	)
+}

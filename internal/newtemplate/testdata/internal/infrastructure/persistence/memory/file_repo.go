@@ -1,0 +1,100 @@
+package memory
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
+
+	ligomemory "github.com/linkeunid/ligo-memory"
+	"{{.ModulePath}}/internal/domain/entity"
+	"{{.ModulePath}}/internal/domain/repository"
+)
+
+// FileRepository is an in-memory implementation of repository.FileRepository.
+// Metadata is stored in a ligo-memory Store; file content is written to disk.
+type FileRepository struct {
+	store *ligomemory.Store[string, *entity.File]
+	dir   string
+}
+
+// NewFileRepository creates a new in-memory file repository.
+func NewFileRepository(dir string, store *ligomemory.Store[string, *entity.File]) repository.FileRepository {
+	os.MkdirAll(dir, 0755)
+	return &FileRepository{store: store, dir: dir}
+}
+
+func (r *FileRepository) Save(file io.Reader, filename string) (*entity.File, error) {
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	id := newUUID()
+	path := filepath.Join(r.dir, id+"_"+filename)
+
+	if err := os.WriteFile(path, content, 0644); err != nil {
+		return nil, err
+	}
+
+	fileEntity := &entity.File{
+		ID:          id,
+		Name:        filename,
+		ContentType: detectContentType(filename, content),
+		Size:        int64(len(content)),
+		Path:        path,
+		CreatedAt:   time.Now(),
+	}
+
+	r.store.Set(id, fileEntity)
+	return fileEntity, nil
+}
+
+func (r *FileRepository) FindByID(id string) (*entity.File, bool) {
+	return r.store.Get(id)
+}
+
+func (r *FileRepository) GetContent(path string) (io.ReadCloser, error) {
+	return os.Open(path)
+}
+
+func (r *FileRepository) FindAll() []*entity.File {
+	return r.store.All()
+}
+
+func (r *FileRepository) Delete(id string) error {
+	file, found := r.store.Get(id)
+	if !found {
+		return fmt.Errorf("file not found")
+	}
+	if err := os.Remove(file.Path); err != nil {
+		return err
+	}
+	r.store.Delete(id)
+	return nil
+}
+
+func detectContentType(filename string, content []byte) string {
+	ct := http.DetectContentType(content)
+	if ct != "application/octet-stream" {
+		return ct
+	}
+	switch filepath.Ext(filename) {
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".png":
+		return "image/png"
+	case ".gif":
+		return "image/gif"
+	case ".pdf":
+		return "application/pdf"
+	case ".txt":
+		return "text/plain"
+	case ".json":
+		return "application/json"
+	default:
+		return "application/octet-stream"
+	}
+}

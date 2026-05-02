@@ -1,0 +1,59 @@
+package usecase
+
+import (
+	"github.com/linkeunid/ligo"
+	"{{.ModulePath}}/internal/domain/entity"
+	"{{.ModulePath}}/internal/domain/repository"
+	"{{.ModulePath}}/internal/usecase/dto"
+)
+
+// {{.Pascal}}UseCase contains business logic for {{.Kebab}} operations.
+type {{.Pascal}}UseCase struct {
+	repo repository.{{.Pascal}}Repository
+	log  ligo.Logger
+}
+
+// New{{.Pascal}}UseCase creates a new {{.Pascal}}UseCase.
+func New{{.Pascal}}UseCase(repo repository.{{.Pascal}}Repository, log ligo.Logger) *{{.Pascal}}UseCase {
+	return &{{.Pascal}}UseCase{repo: repo, log: log}
+}
+
+// GetAll{{.Pascal}}s returns all {{.PluralKebab}}.
+func (uc *{{.Pascal}}UseCase) GetAll{{.Pascal}}s() []*entity.{{.Pascal}} {
+	return uc.repo.FindAll()
+}
+
+// Get{{.Pascal}}ByID retrieves a {{.Kebab}} by ID.
+func (uc *{{.Pascal}}UseCase) Get{{.Pascal}}ByID(id string) (*entity.{{.Pascal}}, error) {
+	item, found := uc.repo.FindByID(id)
+	if !found {
+		return nil, ErrNotFound
+	}
+	return item, nil
+}
+
+// Create{{.Pascal}} creates a new {{.Kebab}}.
+func (uc *{{.Pascal}}UseCase) Create{{.Pascal}}(input dto.Create{{.Pascal}}Input) (*entity.{{.Pascal}}, error) {
+	item := uc.repo.Create(input.Name)
+	uc.log.Info("{{.Pascal}} created", ligo.LoggerField{Key: "id", Value: item.ID})
+	return item, nil
+}
+
+// Update{{.Pascal}} updates an existing {{.Kebab}}.
+func (uc *{{.Pascal}}UseCase) Update{{.Pascal}}(id string, input dto.Update{{.Pascal}}Input) (*entity.{{.Pascal}}, error) {
+	item, updated := uc.repo.Update(id, input.Name)
+	if !updated {
+		return nil, ErrNotFound
+	}
+	uc.log.Info("{{.Pascal}} updated", ligo.LoggerField{Key: "id", Value: id})
+	return item, nil
+}
+
+// Delete{{.Pascal}} deletes a {{.Kebab}} by ID.
+func (uc *{{.Pascal}}UseCase) Delete{{.Pascal}}(id string) error {
+	if !uc.repo.Delete(id) {
+		return ErrNotFound
+	}
+	uc.log.Info("{{.Pascal}} deleted", ligo.LoggerField{Key: "id", Value: id})
+	return nil
+}

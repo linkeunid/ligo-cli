@@ -1,0 +1,46 @@
+package memory
+
+import (
+	ligomemory "github.com/linkeunid/ligo-memory"
+	"{{.ModulePath}}/internal/domain/entity"
+	"{{.ModulePath}}/internal/domain/repository"
+)
+
+// {{.Pascal}}Repository is an in-memory implementation of repository.{{.Pascal}}Repository.
+type {{.Pascal}}Repository struct {
+	store *ligomemory.Store[string, *entity.{{.Pascal}}]
+}
+
+// New{{.Pascal}}Repository creates a new in-memory {{.Pascal}}Repository.
+func New{{.Pascal}}Repository(store *ligomemory.Store[string, *entity.{{.Pascal}}]) repository.{{.Pascal}}Repository {
+	return &{{.Pascal}}Repository{store: store}
+}
+
+func (r *{{.Pascal}}Repository) FindByID(id string) (*entity.{{.Pascal}}, bool) {
+	return r.store.Get(id)
+}
+
+func (r *{{.Pascal}}Repository) FindAll() []*entity.{{.Pascal}} {
+	return r.store.All()
+}
+
+func (r *{{.Pascal}}Repository) Create(name string) *entity.{{.Pascal}} {
+	id := newUUID()
+	item := &entity.{{.Pascal}}{ID: id, Name: name}
+	r.store.Set(id, item)
+	return item
+}
+
+func (r *{{.Pascal}}Repository) Update(id, name string) (*entity.{{.Pascal}}, bool) {
+	_, found := r.store.Get(id)
+	if !found {
+		return nil, false
+	}
+	updated := &entity.{{.Pascal}}{ID: id, Name: name}
+	r.store.Set(id, updated)
+	return updated, true
+}
+
+func (r *{{.Pascal}}Repository) Delete(id string) bool {
+	return r.store.Delete(id)
+}

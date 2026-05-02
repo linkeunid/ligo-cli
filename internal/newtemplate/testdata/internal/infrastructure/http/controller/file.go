@@ -1,0 +1,127 @@
+package controller
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/linkeunid/ligo"
+	"{{.ModulePath}}/internal/config"
+	"{{.ModulePath}}/internal/infrastructure/http/middleware"
+	"{{.ModulePath}}/internal/usecase"
+)
+
+// FileController handles HTTP requests and route bindings for file operations.
+type FileController struct {
+	fileUseCase *usecase.FileUseCase
+	cfg         *config.Config
+	log         ligo.Logger
+	exceptionMW ligo.Middleware
+	loggingMW   ligo.Middleware
+}
+
+// NewFileController creates a new file controller.
+func NewFileController(uc *usecase.FileUseCase, cfg *config.Config, log ligo.Logger) *FileController {
+	return &FileController{
+		fileUseCase: uc,
+		cfg:         cfg,
+		log:         log,
+		exceptionMW: middleware.ExceptionMiddleware(log),
+		loggingMW:   middleware.LoggingMiddleware(log),
+	}
+}
+
+// Routes registers all routes for the file controller.
+func (c *FileController) Routes(r ligo.Router) {
+	cr := ligo.NewChainRouter(r.Group("/files"))
+	cr.Use(c.exceptionMW, c.loggingMW)
+
+	cr.POST("/upload", c.Upload).Handle()
+
+	cr.GET("/:id", c.Download).
+		Pipe(ligo.UUIDPipe("id")).
+		Handle()
+
+	cr.GET("", c.ListFiles).Handle()
+
+	cr.DELETE("/:id", c.DeleteFile).
+		Pipe(ligo.UUIDPipe("id")).
+		Handle()
+}
+
+// Upload handles POST /files/upload
+func (c *FileController) Upload(ctx ligo.Context) error {
+	if err := ctx.Request().ParseMultipartForm(c.cfg.MaxFileSize); err != nil {
+		return ctx.BadRequest("failed to parse form")
+	}
+
+	file, header, err := ctx.Request().FormFile("file")
+	if err != nil {
+		return ctx.BadRequest("file is required")
+	}
+	defer file.Close()
+
+	savedFile, err := c.fileUseCase.UploadFile(file, header.Filename)
+	if err != nil {
+		return ctx.InternalServerError("failed to save file")
+	}
+
+	return ctx.Created(map[string]any{
+		"id":       savedFile.ID,
+		"filename": savedFile.Name,
+		"size":     savedFile.Size,
+		"url":      fmt.Sprintf("/files/%s", savedFile.ID),
+	})
+}
+
+// Download handles GET /files/:id
+func (c *FileController) Download(ctx ligo.Context) error {
+	id := ctx.Param("id")
+
+	file, err := c.fileUseCase.GetFile(id)
+	if err != nil {
+		return err
+	}
+
+	reader, err := c.fileUseCase.GetFileContent(file.Path)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	ctx.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
+	ctx.Response().Header().Set("Content-Type", file.ContentType)
+	ctx.Response().Header().Set("Content-Length", strconv.FormatInt(file.Size, 10))
+
+	return ctx.Stream(reader)
+}
+
+// ListFiles handles GET /files
+func (c *FileController) ListFiles(ctx ligo.Context) error {
+	files := c.fileUseCase.ListFiles()
+
+	fileInfos := make([]map[string]any, len(files))
+	for i, f := range files {
+		fileInfos[i] = map[string]any{
+			"id":       f.ID,
+			"filename": f.Name,
+			"size":     f.Size,
+			"url":      fmt.Sprintf("/files/%s", f.ID),
+		}
+	}
+
+	return ctx.OK(map[string]any{
+		"files": fileInfos,
+		"count": len(fileInfos),
+	})
+}
+
+// DeleteFile handles DELETE /files/:id
+func (c *FileController) DeleteFile(ctx ligo.Context) error {
+	id := ctx.Param("id")
+
+	if err := c.fileUseCase.DeleteFile(id); err != nil {
+		return err
+	}
+
+	return ctx.NoContent()
+}

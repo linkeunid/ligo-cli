@@ -1,0 +1,6 @@
+package dto
+
+// Update{{.Pascal}}Input is the input for updating a {{.Kebab}}.
+type Update{{.Pascal}}Input struct {
+	Name string `json:"name" validate:"omitempty,min=2,max=100"`
+}

@@ -1,0 +1,6 @@
+package dto
+
+// Create{{.Pascal}}Input is the input for creating a {{.Kebab}}.
+type Create{{.Pascal}}Input struct {
+	Name string `json:"name" validate:"required,min=2,max=100"`
+}

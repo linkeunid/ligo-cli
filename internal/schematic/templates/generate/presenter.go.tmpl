@@ -1,0 +1,31 @@
+package presenter
+
+import "{{.ModulePath}}/internal/domain/entity"
+
+// {{.Pascal}}Presenter handles response formatting for {{.Kebab}} endpoints.
+type {{.Pascal}}Presenter struct{}
+
+// New{{.Pascal}}Presenter creates a new {{.Pascal}}Presenter.
+func New{{.Pascal}}Presenter() *{{.Pascal}}Presenter {
+	return &{{.Pascal}}Presenter{}
+}
+
+// ToResponse converts a {{.Pascal}} entity to response format.
+func (p *{{.Pascal}}Presenter) ToResponse(e *entity.{{.Pascal}}) map[string]any {
+	return map[string]any{
+		"id":   e.ID,
+		"name": e.Name,
+	}
+}
+
+// ToListResponse converts a list of {{.Pascal}} entities to response format.
+func (p *{{.Pascal}}Presenter) ToListResponse(items []*entity.{{.Pascal}}) map[string]any {
+	list := make([]map[string]any, len(items))
+	for i, item := range items {
+		list[i] = p.ToResponse(item)
+	}
+	return map[string]any{
+		"{{.PluralKebab}}": list,
+		"count":            len(list),
+	}
+}

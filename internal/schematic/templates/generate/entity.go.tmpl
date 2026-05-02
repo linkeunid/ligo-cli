@@ -1,0 +1,10 @@
+package entity
+
+// {{.Pascal}} is a domain entity.
+type {{.Pascal}} struct {
+	ID   string
+	Name string
+}
+
+// GetID returns the entity ID.
+func (e *{{.Pascal}}) GetID() string { return e.ID }

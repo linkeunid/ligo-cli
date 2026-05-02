@@ -1,0 +1,82 @@
+package controller
+
+import (
+	"github.com/linkeunid/ligo"
+	"{{.ModulePath}}/internal/infrastructure/http/middleware"
+	"{{.ModulePath}}/internal/infrastructure/http/presenter"
+	"{{.ModulePath}}/internal/usecase"
+	"{{.ModulePath}}/internal/usecase/dto"
+)
+
+// {{.Pascal}}Controller handles HTTP requests for {{.Kebab}} operations.
+type {{.Pascal}}Controller struct {
+	uc          *usecase.{{.Pascal}}UseCase
+	presenter   *presenter.{{.Pascal}}Presenter
+	log         ligo.Logger
+	exceptionMW ligo.Middleware
+	loggingMW   ligo.Middleware
+}
+
+// New{{.Pascal}}Controller creates a new {{.Pascal}}Controller.
+func New{{.Pascal}}Controller(uc *usecase.{{.Pascal}}UseCase, log ligo.Logger) *{{.Pascal}}Controller {
+	return &{{.Pascal}}Controller{
+		uc:          uc,
+		presenter:   presenter.New{{.Pascal}}Presenter(),
+		log:         log,
+		exceptionMW: middleware.ExceptionMiddleware(log),
+		loggingMW:   middleware.LoggingMiddleware(log),
+	}
+}
+
+// Routes registers all routes for the {{.Pascal}}Controller.
+func (c *{{.Pascal}}Controller) Routes(r ligo.Router) {
+	cr := ligo.NewChainRouter(r.Group("/{{.PluralKebab}}"))
+	cr.Use(c.exceptionMW, c.loggingMW)
+
+	cr.GET("", c.GetAll{{.Pascal}}s).Handle()
+	cr.GET("/:id", c.Get{{.Pascal}}ByID).Pipe(ligo.UUIDPipe("id")).Handle()
+	cr.POST("", c.Create{{.Pascal}}).Pipe(ligo.ValidationPipe(&dto.Create{{.Pascal}}Input{})).Handle()
+	cr.PUT("/:id", c.Update{{.Pascal}}).Pipe(ligo.UUIDPipe("id"), ligo.ValidationPipe(&dto.Update{{.Pascal}}Input{})).Handle()
+	cr.DELETE("/:id", c.Delete{{.Pascal}}).Pipe(ligo.UUIDPipe("id")).Handle()
+}
+
+func (c *{{.Pascal}}Controller) GetAll{{.Pascal}}s(ctx ligo.Context) error {
+	items := c.uc.GetAll{{.Pascal}}s()
+	return ctx.OK(c.presenter.ToListResponse(items))
+}
+
+func (c *{{.Pascal}}Controller) Get{{.Pascal}}ByID(ctx ligo.Context) error {
+	id := ctx.Param("id")
+	item, err := c.uc.Get{{.Pascal}}ByID(id)
+	if err != nil {
+		return err
+	}
+	return ctx.OK(c.presenter.ToResponse(item))
+}
+
+func (c *{{.Pascal}}Controller) Create{{.Pascal}}(ctx ligo.Context) error {
+	input := ligo.ValidatedBody[dto.Create{{.Pascal}}Input](ctx)
+	item, err := c.uc.Create{{.Pascal}}(*input)
+	if err != nil {
+		return err
+	}
+	return ctx.Created(c.presenter.ToResponse(item))
+}
+
+func (c *{{.Pascal}}Controller) Update{{.Pascal}}(ctx ligo.Context) error {
+	id := ctx.Param("id")
+	input := ligo.ValidatedBody[dto.Update{{.Pascal}}Input](ctx)
+	item, err := c.uc.Update{{.Pascal}}(id, *input)
+	if err != nil {
+		return err
+	}
+	return ctx.OK(c.presenter.ToResponse(item))
+}
+
+func (c *{{.Pascal}}Controller) Delete{{.Pascal}}(ctx ligo.Context) error {
+	id := ctx.Param("id")
+	if err := c.uc.Delete{{.Pascal}}(id); err != nil {
+		return err
+	}
+	return ctx.NoContent()
+}
