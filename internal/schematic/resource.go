@@ -34,30 +34,7 @@ func (s *resourceSchematic) Run(ctx Context) error {
 
 	n := templateutil.NormalizeName(ctx.Name)
 	d := makeData(ctx)
-
-	if !ctx.Full {
-		for _, step := range []struct {
-			label string
-			fn    func() error
-		}{
-			{"usecase", func() error {
-				return templateutil.RenderToFile(simpleUsecaseTmpl,
-					filepath.Join(ctx.WorkDir, "internal", "usecase", fmt.Sprintf("%s.go", n.Snake)),
-					d, ctx.DryRun)
-			}},
-			{"controller", func() error { return (&controllerSchematic{}).Run(ctx) }},
-			{"module", func() error {
-				return templateutil.RenderToFile(simpleModuleTmpl,
-					filepath.Join(ctx.WorkDir, "internal", "module", fmt.Sprintf("%s.go", n.Snake)),
-					d, ctx.DryRun)
-			}},
-		} {
-			if err := step.fn(); err != nil {
-				return fmt.Errorf("%s: %w", step.label, err)
-			}
-		}
-		return askAndRegister(ctx, n.Pascal)
-	}
+	ctx.Full = true
 
 	for _, step := range []struct {
 		label string

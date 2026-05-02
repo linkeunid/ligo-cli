@@ -47,7 +47,7 @@ ligo new my-app --pre-release                        # use local ../ligo sibling
 
 | Schematic | Alias | Default (simple) | `--full` |
 |-----------|-------|-----------------|---------|
-| `resource` | `res` | usecase + controller + module (simple) | entity + dto + usecase + errors.go + repo + uuid.go + controller + presenter + module |
+| `resource` | `res` | entity + dto + usecase + errors.go + repo + uuid.go + controller + presenter + module | — |
 | `module` | `mo` | `internal/module/<name>.go` (wires simple usecase+controller) | `internal/module/<name>.go` (wires repo+usecase+controller) |
 | `controller` | `co` | `internal/infrastructure/http/controller/<name>.go` (Hello endpoint) | Full controller (CRUD + presenter) |
 | `usecase` | `uc` | `internal/usecase/<name>.go` (Hello method) | Full usecase (CRUD) + DTOs + `errors.go` |
@@ -66,8 +66,7 @@ ligo g uc product               # simple use case (Hello method)
 ligo g uc product --full        # full use case with DTOs
 ligo g mo product               # simple module
 ligo g mo product --full        # full module with repo wiring
-ligo g res product              # all simple layers
-ligo g res product --full       # all full layers
+ligo g res product              # all layers (entity, dto, usecase, repo, controller, presenter, module)
 ligo g res product --dry-run    # preview files without writing
 ```
 
@@ -81,15 +80,7 @@ ligo g res product --dry-run    # preview files without writing
 
 ### Generated type names
 
-**`ligo g res product`** (simple, default):
-
-| File | Type |
-|------|------|
-| `usecase/product.go` | `ProductUseCase` with `Hello()` |
-| `infrastructure/http/controller/product.go` | `ProductController` |
-| `module/product.go` | `func Product() ligo.Module` |
-
-**`ligo g res product --full`**:
+**`ligo g res product`**:
 
 | File | Type |
 |------|------|
