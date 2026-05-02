@@ -75,7 +75,7 @@ func (c *FileController) Upload(ctx ligo.Context) error {
 
 // Download handles GET /files/:id
 func (c *FileController) Download(ctx ligo.Context) error {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id := ligo.Get[int](ctx, "id")
 
 	file, err := c.fileUseCase.GetFile(id)
 	if err != nil {
@@ -117,7 +117,7 @@ func (c *FileController) ListFiles(ctx ligo.Context) error {
 
 // DeleteFile handles DELETE /files/:id
 func (c *FileController) DeleteFile(ctx ligo.Context) error {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id := ligo.Get[int](ctx, "id")
 
 	if err := c.fileUseCase.DeleteFile(id); err != nil {
 		return err
