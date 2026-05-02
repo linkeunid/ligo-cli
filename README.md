@@ -29,7 +29,17 @@ ligo new my-app --module github.com/acme/my-app
 ligo new my-app --no-git
 ```
 
-Writes the full Ligo boilerplate tree into `./my-app/`, runs `go mod tidy`, and initialises a git repo.
+Scaffolds a new Ligo project into `./my-app/`, runs `go mod tidy`, and initialises a git repo.
+
+By default generates a minimal project with one Hello endpoint. Use `--full` for the complete boilerplate with users, file upload, and JWT auth.
+
+```bash
+ligo new my-app                                      # simple boilerplate (default)
+ligo new my-app --full                               # full boilerplate
+ligo new my-app --module github.com/acme/my-app      # custom module path
+ligo new my-app --no-git                             # skip git init
+ligo new my-app --pre-release                        # use local ../ligo sibling dirs
+```
 
 ## `ligo generate`
 
@@ -37,13 +47,14 @@ Writes the full Ligo boilerplate tree into `./my-app/`, runs `go mod tidy`, and 
 
 | Schematic | Alias | Default (simple) | `--full` |
 |-----------|-------|-----------------|---------|
-| `resource` | `res` | All simple layers + register prompt | All full layers + register prompt |
-| `module` | `mo` | `internal/module/<name>.go` (simple) | `internal/module/<name>.go` (with repo wiring) |
-| `controller` | `co` | `internal/infrastructure/http/controller/<name>.go` (simple) | Full controller with repo/presenter |
-| `usecase` | `uc` | `internal/usecase/<name>.go` (simple Hello) | Full usecase + DTOs |
-| `entity` | `en` | `internal/domain/entity/<name>.go` + repository interface | — |
-| `repository` | `rep` | `internal/infrastructure/persistence/memory/<name>_repo.go` | — |
+| `resource` | `res` | usecase + controller + module (simple) | entity + dto + usecase + errors.go + repo + uuid.go + controller + presenter + module |
+| `module` | `mo` | `internal/module/<name>.go` (wires simple usecase+controller) | `internal/module/<name>.go` (wires repo+usecase+controller) |
+| `controller` | `co` | `internal/infrastructure/http/controller/<name>.go` (Hello endpoint) | Full controller (CRUD + presenter) |
+| `usecase` | `uc` | `internal/usecase/<name>.go` (Hello method) | Full usecase (CRUD) + DTOs + `errors.go` |
+| `entity` | `en` | `internal/domain/entity/<name>.go` + `internal/domain/repository/<name>.go` | — |
+| `repository` | `rep` | `internal/infrastructure/persistence/memory/<name>_repo.go` + `uuid.go` | — |
 | `dto` | `dto` | `internal/usecase/dto/create_<name>.go` + `update_<name>.go` | — |
+| `presenter` | — | `internal/infrastructure/http/presenter/<name>.go` | — |
 
 ### Examples
 
@@ -70,17 +81,28 @@ ligo g res product --dry-run    # preview files without writing
 
 ### Generated type names
 
-Given `ligo g res product`:
+**`ligo g res product`** (simple, default):
+
+| File | Type |
+|------|------|
+| `usecase/product.go` | `ProductUseCase` with `Hello()` |
+| `infrastructure/http/controller/product.go` | `ProductController` |
+| `module/product.go` | `func Product() ligo.Module` |
+
+**`ligo g res product --full`**:
 
 | File | Type |
 |------|------|
 | `domain/entity/product.go` | `Product` |
 | `domain/repository/product.go` | `ProductRepository` (interface) |
-| `usecase/product.go` | `ProductUseCase` |
+| `usecase/errors.go` | `ErrNotFound`, `ErrValidation`, ... |
+| `usecase/product.go` | `ProductUseCase` with CRUD methods |
 | `usecase/dto/create_product.go` | `CreateProductInput` |
+| `usecase/dto/update_product.go` | `UpdateProductInput` |
+| `infrastructure/persistence/memory/uuid.go` | `newUUID()` helper |
+| `infrastructure/persistence/memory/product_repo.go` | `ProductRepository` (impl) |
 | `infrastructure/http/controller/product.go` | `ProductController` |
 | `infrastructure/http/presenter/product.go` | `ProductPresenter` |
-| `infrastructure/persistence/memory/product_repo.go` | `ProductRepository` (impl) |
 | `module/product.go` | `func Product() ligo.Module` |
 
 ### Interactive mode
@@ -90,7 +112,6 @@ Running without a name drops into prompts:
 ```bash
 ligo g res
 # ? Resource name: product
-# ? Generate with auth guard? (y/N)
 # ? Register Product module in internal/module/main.go? (Y/n)
 ```
 

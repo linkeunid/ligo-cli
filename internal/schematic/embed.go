@@ -33,6 +33,12 @@ var presenterTmpl string
 //go:embed templates/generate/memory_repo.go.tmpl
 var memoryRepoTmpl string
 
+//go:embed templates/generate/memory_uuid.go.tmpl
+var memoryUUIDTmpl string
+
+//go:embed templates/generate/usecase_errors.go.tmpl
+var usecaseErrorsTmpl string
+
 //go:embed templates/generate/module.go.tmpl
 var moduleTmpl string
 

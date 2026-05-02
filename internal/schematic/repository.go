@@ -18,6 +18,13 @@ func (s *repositorySchematic) Run(ctx Context) error {
 	d := makeData(ctx)
 	n := templateutil.NormalizeName(ctx.Name)
 
+	if err := templateutil.RenderToFile(memoryUUIDTmpl,
+		filepath.Join(ctx.WorkDir, "internal", "infrastructure", "persistence", "memory", "uuid.go"),
+		nil, ctx.DryRun,
+	); err != nil {
+		return err
+	}
+
 	return templateutil.RenderToFile(memoryRepoTmpl,
 		filepath.Join(ctx.WorkDir, "internal", "infrastructure", "persistence", "memory",
 			fmt.Sprintf("%s_repo.go", n.Snake)),

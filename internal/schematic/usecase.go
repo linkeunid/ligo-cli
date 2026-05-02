@@ -22,6 +22,12 @@ func (s *usecaseSchematic) Run(ctx Context) error {
 		if err := (&dtoSchematic{}).Run(ctx); err != nil {
 			return err
 		}
+		if err := templateutil.RenderToFile(usecaseErrorsTmpl,
+			filepath.Join(ctx.WorkDir, "internal", "usecase", "errors.go"),
+			nil, ctx.DryRun,
+		); err != nil {
+			return err
+		}
 		return templateutil.RenderToFile(usecaseTmpl,
 			filepath.Join(ctx.WorkDir, "internal", "usecase", fmt.Sprintf("%s.go", n.Snake)),
 			d, ctx.DryRun,
