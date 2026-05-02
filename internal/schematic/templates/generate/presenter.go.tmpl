@@ -26,6 +26,6 @@ func (p *{{.Pascal}}Presenter) ToListResponse(items []*entity.{{.Pascal}}) map[s
 	}
 	return map[string]any{
 		"{{.PluralKebab}}": list,
-		"count":            len(list),
+		"count": len(list),
 	}
 }
