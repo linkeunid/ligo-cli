@@ -26,19 +26,19 @@ func ExceptionMiddleware(log ligo.Logger) ligo.Middleware {
 			var ve validator.ValidationErrors
 			switch {
 			case errors.Is(err, usecase.ErrUnauthorized):
-				return ctx.JSON(401, map[string]string{"error": "Unauthorized"})
+				return ctx.Unauthorized()
 			case errors.Is(err, usecase.ErrForbidden):
-				return ctx.JSON(403, map[string]string{"error": "Forbidden"})
+				return ctx.Forbidden()
 			case errors.Is(err, usecase.ErrNotFound):
-				return ctx.JSON(404, map[string]string{"error": "Not Found"})
+				return ctx.NotFound()
 			case errors.Is(err, ligo.ErrBadRequest):
-				return ctx.JSON(400, map[string]string{"error": "Bad Request"})
+				return ctx.BadRequest()
 			case errors.As(err, &ve):
-				return ctx.JSON(422, map[string]string{"error": "Unprocessable Entity"})
+				return ctx.UnprocessableEntity()
 			case errors.Is(err, usecase.ErrValidation):
-				return ctx.JSON(400, map[string]string{"error": "Bad Request"})
+				return ctx.BadRequest()
 			default:
-				return ctx.JSON(500, map[string]string{"error": "Internal Server Error"})
+				return ctx.InternalServerError()
 			}
 		}
 	}
