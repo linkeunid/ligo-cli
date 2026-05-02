@@ -23,6 +23,8 @@ Server runs on `http://localhost:8080`.
 |--------|------|-------------|
 | GET | `/` | Hello World |
 
+> Generated resources (e.g. `ligo g res animal`) are grouped under `/<plural-name>` (e.g. `/animals`).
+
 ## Project Structure
 
 ```
