@@ -2,15 +2,29 @@ package command
 
 import (
 	"os"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 )
+
+// version is "dev" by default; overridden by ldflags or read from build info.
+var version = "dev"
+
+func resolveVersion() string {
+	if version != "dev" {
+		return version // ldflags took precedence
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return version
+}
 
 var rootCmd = &cobra.Command{
 	Use:     "ligo",
 	Short:   "Ligo framework CLI",
 	Long:    "A CLI for scaffolding and managing Ligo framework projects.",
-	Version: "0.1.0",
+	Version: resolveVersion(),
 }
 
 func init() {
