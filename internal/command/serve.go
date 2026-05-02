@@ -24,7 +24,7 @@ var serveCmd = &cobra.Command{
 }
 
 func init() {
-	serveCmd.Flags().BoolVar(&watchFlag, "watch", false, "Restart on file changes")
+	serveCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Restart on file changes")
 	rootCmd.AddCommand(serveCmd)
 }
 
