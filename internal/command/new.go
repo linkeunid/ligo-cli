@@ -16,6 +16,7 @@ import (
 var (
 	newModuleFlag string
 	noGitFlag     bool
+	preRelease    bool
 )
 
 var newCmd = &cobra.Command{
@@ -29,6 +30,7 @@ var newCmd = &cobra.Command{
 func init() {
 	newCmd.Flags().StringVar(&newModuleFlag, "module", "", "Go module path (default: github.com/<project-name>)")
 	newCmd.Flags().BoolVar(&noGitFlag, "no-git", false, "Skip git init")
+	newCmd.Flags().BoolVar(&preRelease, "pre-release", false, "Use local ../ligo and ../ligo-memory replace directives (for pre-release development)")
 	rootCmd.AddCommand(newCmd)
 }
 
@@ -90,13 +92,15 @@ func runNew(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println("\nRunning go mod tidy...")
-	tidy := exec.Command("go", "mod", "tidy")
-	tidy.Dir = projectName
-	tidy.Stdout = os.Stdout
-	tidy.Stderr = os.Stderr
-	if err := tidy.Run(); err != nil {
-		fmt.Fprintln(os.Stderr, "Warning: go mod tidy failed:", err)
+	if preRelease {
+		runPreReleaseTidy(projectName)
+	} else {
+		fmt.Println("\nSkipping go mod tidy — ligo is not yet published to the module proxy.")
+		fmt.Println("Use --pre-release if ligo is checked out as a sibling directory, or run manually:")
+		fmt.Printf("  cd %s\n", projectName)
+		fmt.Println("  go mod edit -replace=github.com/linkeunid/ligo=<path/to/ligo>")
+		fmt.Println("  go mod edit -replace=github.com/linkeunid/ligo-memory=<path/to/ligo-memory>")
+		fmt.Println("  go mod tidy")
 	}
 
 	if !noGitFlag {
@@ -110,6 +114,43 @@ func runNew(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("\nDone! cd %s && ligo serve\n", projectName)
 	return nil
+}
+
+func runPreReleaseTidy(projectName string) {
+	replacements := []struct {
+		mod  string
+		path string
+	}{
+		{"github.com/linkeunid/ligo", "../ligo"},
+		{"github.com/linkeunid/ligo-memory", "../ligo-memory"},
+	}
+
+	for _, r := range replacements {
+		abs, err := filepath.Abs(r.path)
+		if err != nil || !dirExists(abs) {
+			fmt.Fprintf(os.Stderr, "Warning: %s not found at %s — skipping replace directive\n", r.mod, r.path)
+			continue
+		}
+		replace := exec.Command("go", "mod", "edit", "-replace="+r.mod+"="+abs)
+		replace.Dir = projectName
+		if out, err := replace.CombinedOutput(); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: replace %s failed: %v\n%s\n", r.mod, err, out)
+		}
+	}
+
+	fmt.Println("\nRunning go mod tidy...")
+	tidy := exec.Command("go", "mod", "tidy")
+	tidy.Dir = projectName
+	tidy.Stdout = os.Stdout
+	tidy.Stderr = os.Stderr
+	if err := tidy.Run(); err != nil {
+		fmt.Fprintln(os.Stderr, "Warning: go mod tidy failed:", err)
+	}
+}
+
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }
 
 func writeFile(dest string, content []byte) error {
