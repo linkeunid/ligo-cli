@@ -21,7 +21,7 @@ Server runs on `http://localhost:8080`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/hello` | Hello World |
+| GET | `/` | Hello World |
 
 ## Project Structure
 
