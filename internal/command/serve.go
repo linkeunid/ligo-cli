@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -91,7 +92,8 @@ func runWithWatcher() error {
 				debounce.Reset(500 * time.Millisecond)
 			}
 		case <-debounce.C:
-			fmt.Println("\nFile changed — restarting...")
+			clearScreen()
+			fmt.Println("File changed — restarting...")
 			killApp()
 			startApp()
 		case err, ok := <-watcher.Errors:
@@ -104,6 +106,17 @@ func runWithWatcher() error {
 			return nil
 		}
 	}
+}
+
+func clearScreen() {
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "cls")
+	} else {
+		cmd = exec.Command("clear")
+	}
+	cmd.Stdout = os.Stdout
+	_ = cmd.Run()
 }
 
 func addRecursive(w *fsnotify.Watcher, root string) error {
