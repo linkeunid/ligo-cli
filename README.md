@@ -54,7 +54,7 @@ ligo new my-app --pre-release                        # use local ../ligo sibling
 | `entity` | `en` | `internal/domain/entity/<name>.go` + `internal/domain/repository/<name>.go` | — |
 | `repository` | `rep` | `internal/infrastructure/persistence/memory/<name>_repo.go` + `uuid.go` | — |
 | `dto` | `dto` | `internal/usecase/dto/create_<name>.go` + `update_<name>.go` | — |
-| `presenter` | — | `internal/infrastructure/http/presenter/<name>.go` | — |
+| `presenter` | `pre` | `internal/infrastructure/http/presenter/<name>.go` | — |
 
 ### Examples
 

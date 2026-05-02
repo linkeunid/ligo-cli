@@ -58,6 +58,7 @@ func runWithWatcher() error {
 		proc.Stdout = os.Stdout
 		proc.Stderr = os.Stderr
 		proc.Stdin = os.Stdin
+		proc.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		if err := proc.Start(); err != nil {
 			fmt.Fprintln(os.Stderr, "Error starting app:", err)
 		}
@@ -65,7 +66,8 @@ func runWithWatcher() error {
 
 	killApp := func() {
 		if proc != nil && proc.Process != nil {
-			_ = proc.Process.Kill()
+			// Kill the entire process group so the go run child (the app) is also killed.
+			_ = syscall.Kill(-proc.Process.Pid, syscall.SIGKILL)
 			_ = proc.Wait()
 			proc = nil
 		}

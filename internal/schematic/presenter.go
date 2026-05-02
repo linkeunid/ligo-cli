@@ -9,8 +9,10 @@ import (
 
 type presenterSchematic struct{}
 
+func init() { Register(&presenterSchematic{}) }
+
 func (s *presenterSchematic) Name() string      { return "presenter" }
-func (s *presenterSchematic) Aliases() []string { return []string{} }
+func (s *presenterSchematic) Aliases() []string { return []string{"pre"} }
 
 func (s *presenterSchematic) Run(ctx Context) error {
 	d := makeData(ctx)
