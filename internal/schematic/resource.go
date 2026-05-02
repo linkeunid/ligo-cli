@@ -2,7 +2,6 @@ package schematic
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/charmbracelet/huh"
 	"github.com/linkeunid/ligo-cli/internal/templateutil"
@@ -33,7 +32,6 @@ func (s *resourceSchematic) Run(ctx Context) error {
 	}
 
 	n := templateutil.NormalizeName(ctx.Name)
-	d := makeData(ctx)
 	ctx.Full = true
 
 	for _, step := range []struct {
@@ -42,19 +40,11 @@ func (s *resourceSchematic) Run(ctx Context) error {
 	}{
 		{"entity", func() error { return (&entitySchematic{}).Run(ctx) }},
 		{"dto", func() error { return (&dtoSchematic{}).Run(ctx) }},
-		{"usecase", func() error {
-			return templateutil.RenderToFile(usecaseTmpl,
-				filepath.Join(ctx.WorkDir, "internal", "usecase", fmt.Sprintf("%s.go", n.Snake)),
-				d, ctx.DryRun)
-		}},
+		{"usecase", func() error { return (&usecaseSchematic{}).Run(ctx) }},
 		{"repository", func() error { return (&repositorySchematic{}).Run(ctx) }},
 		{"controller", func() error { return (&controllerSchematic{}).Run(ctx) }},
 		{"presenter", func() error { return (&presenterSchematic{}).Run(ctx) }},
-		{"module", func() error {
-			return templateutil.RenderToFile(moduleTmpl,
-				filepath.Join(ctx.WorkDir, "internal", "module", fmt.Sprintf("%s.go", n.Snake)),
-				d, ctx.DryRun)
-		}},
+		{"module", func() error { return (&moduleSchematic{}).Run(ctx) }},
 	} {
 		if err := step.fn(); err != nil {
 			return fmt.Errorf("%s: %w", step.label, err)
