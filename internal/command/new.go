@@ -95,12 +95,14 @@ func runNew(cmd *cobra.Command, args []string) error {
 	if preRelease {
 		runPreReleaseTidy(projectName)
 	} else {
-		fmt.Println("\nSkipping go mod tidy — ligo is not yet published to the module proxy.")
-		fmt.Println("Use --pre-release if ligo is checked out as a sibling directory, or run manually:")
-		fmt.Printf("  cd %s\n", projectName)
-		fmt.Println("  go mod edit -replace=github.com/linkeunid/ligo=<path/to/ligo>")
-		fmt.Println("  go mod edit -replace=github.com/linkeunid/ligo-memory=<path/to/ligo-memory>")
-		fmt.Println("  go mod tidy")
+		fmt.Println("\nRunning go mod tidy...")
+		tidy := exec.Command("go", "mod", "tidy")
+		tidy.Dir = projectName
+		tidy.Stdout = os.Stdout
+		tidy.Stderr = os.Stderr
+		if err := tidy.Run(); err != nil {
+			fmt.Fprintln(os.Stderr, "Warning: go mod tidy failed:", err)
+		}
 	}
 
 	if !noGitFlag {
