@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/linkeunid/ligo-cli/internal/newtemplate"
+	"github.com/linkeunid/ligo-cli/internal/schematic/full"
 	"github.com/linkeunid/ligo-cli/internal/schematic/simple"
 	"github.com/spf13/cobra"
 )
@@ -52,16 +52,16 @@ func runNew(cmd *cobra.Command, args []string) error {
 
 	templateFS := simple.FS
 	if fullBoilerplate {
-		templateFS = newtemplate.FS
+		templateFS = full.FS
 	}
 
-	err := fs.WalkDir(templateFS, "testdata", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(templateFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		rel := strings.TrimPrefix(path, "testdata/")
-		if rel == "" || rel == "testdata" {
+		rel := path
+		if rel == "." || rel == "fs.go" {
 			return nil
 		}
 		rel = strings.TrimSuffix(rel, ".tmpl")
