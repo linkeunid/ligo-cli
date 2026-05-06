@@ -10,15 +10,17 @@ import (
 	"text/template"
 
 	"github.com/linkeunid/ligo-cli/internal/schematic/full"
+	"github.com/linkeunid/ligo-cli/internal/schematic/runner"
 	"github.com/linkeunid/ligo-cli/internal/schematic/simple"
 	"github.com/spf13/cobra"
 )
 
 var (
-	newModuleFlag string
-	noGitFlag     bool
-	fullBoilerplate bool
-	preRelease    bool
+	newModuleFlag     string
+	noGitFlag         bool
+	fullBoilerplate   bool
+	runnerBoilerplate bool
+	preRelease        bool
 )
 
 var newCmd = &cobra.Command{
@@ -33,6 +35,7 @@ func init() {
 	newCmd.Flags().StringVar(&newModuleFlag, "module", "", "Go module path (default: github.com/<project-name>)")
 	newCmd.Flags().BoolVar(&noGitFlag, "no-git", false, "Skip git init")
 	newCmd.Flags().BoolVar(&fullBoilerplate, "full", false, "Scaffold full boilerplate (users, files, auth) instead of the minimal hello-world template")
+	newCmd.Flags().BoolVar(&runnerBoilerplate, "runner", false, "Scaffold background worker/runner instead of HTTP server template")
 	newCmd.Flags().BoolVar(&preRelease, "pre-release", false, "Use local ../ligo and ../ligo-memory replace directives (for pre-release development)")
 	rootCmd.AddCommand(newCmd)
 }
@@ -53,6 +56,8 @@ func runNew(cmd *cobra.Command, args []string) error {
 	templateFS := simple.FS
 	if fullBoilerplate {
 		templateFS = full.FS
+	} else if runnerBoilerplate {
+		templateFS = runner.FS
 	}
 
 	err := fs.WalkDir(templateFS, ".", func(path string, d fs.DirEntry, err error) error {
@@ -121,7 +126,11 @@ func runNew(cmd *cobra.Command, args []string) error {
 		_ = gitInit.Run()
 	}
 
-	fmt.Printf("\nDone! cd %s && ligo serve\n", projectName)
+	doneCmd := "ligo serve"
+	if runnerBoilerplate {
+		doneCmd = "go run cmd/runner/main.go"
+	}
+	fmt.Printf("\nDone! cd %s && %s\n", projectName, doneCmd)
 	return nil
 }
 
