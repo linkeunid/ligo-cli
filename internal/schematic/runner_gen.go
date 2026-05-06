@@ -130,10 +130,10 @@ import (
 type {{.Pascal}}Controller struct {
 	{{.Snake}}UseCase *{{.Pascal}}UseCase
 	log         ligo.Logger
-	cancel            context.CancelFunc
-	mu                sync.Mutex
-	running           atomic.Bool
-	wg                sync.WaitGroup
+	cancel      context.CancelFunc
+	mu          sync.Mutex
+	running     atomic.Bool
+	wg          sync.WaitGroup
 }
 
 func New{{.Pascal}}Controller(uc *{{.Pascal}}UseCase, log ligo.Logger) *{{.Pascal}}Controller {
