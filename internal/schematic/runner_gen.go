@@ -128,7 +128,7 @@ import (
 )
 
 type {{.Pascal}}Controller struct {
-	{{.Snake}}UseCase *{{.Pascal}}UseCase
+	{{.Camel}}UseCase *{{.Pascal}}UseCase
 	log         ligo.Logger
 	cancel      context.CancelFunc
 	mu          sync.Mutex
@@ -138,7 +138,7 @@ type {{.Pascal}}Controller struct {
 
 func New{{.Pascal}}Controller(uc *{{.Pascal}}UseCase, log ligo.Logger) *{{.Pascal}}Controller {
 	return &{{.Pascal}}Controller{
-		{{.Snake}}UseCase: uc,
+		{{.Camel}}UseCase: uc,
 		log:         log,
 	}
 }
@@ -208,7 +208,7 @@ func (c *{{.Pascal}}Controller) run(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	c.{{.Snake}}UseCase.Execute()
+	c.{{.Camel}}UseCase.Execute()
 
 	for {
 		select {
@@ -216,7 +216,7 @@ func (c *{{.Pascal}}Controller) run(ctx context.Context) {
 			c.log.Info("{{.Pascal}} worker stopped")
 			return
 		case <-ticker.C:
-			c.{{.Snake}}UseCase.Execute()
+			c.{{.Camel}}UseCase.Execute()
 		}
 	}
 }

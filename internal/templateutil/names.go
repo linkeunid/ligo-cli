@@ -8,6 +8,7 @@ import (
 // Names holds all normalized forms of an input resource name.
 type Names struct {
 	Pascal      string // "OrderItem"
+	Camel       string // "orderItem"
 	Snake       string // "order_item"
 	Kebab       string // "order-item"
 	PluralKebab string // "order-items"
@@ -17,11 +18,13 @@ type Names struct {
 func NormalizeName(input string) Names {
 	words := splitWords(input)
 	pascal := toPascal(words)
+	camel := toCamel(words)
 	snake := strings.Join(words, "_")
 	kebab := strings.Join(words, "-")
 	pluralKebab := pluralize(kebab)
 	return Names{
 		Pascal:      pascal,
+		Camel:       camel,
 		Snake:       snake,
 		Kebab:       kebab,
 		PluralKebab: pluralKebab,
@@ -48,6 +51,23 @@ func splitWords(s string) []string {
 func toPascal(words []string) string {
 	var b strings.Builder
 	for _, w := range words {
+		if len(w) == 0 {
+			continue
+		}
+		b.WriteString(strings.ToUpper(w[:1]) + w[1:])
+	}
+	return b.String()
+}
+
+func toCamel(words []string) string {
+	if len(words) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	// First word is lowercase
+	b.WriteString(words[0])
+	// Rest are PascalCase
+	for _, w := range words[1:] {
 		if len(w) == 0 {
 			continue
 		}
