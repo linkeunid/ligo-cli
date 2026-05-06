@@ -91,7 +91,7 @@ func {{.Pascal}}Module() ligo.Module {
 		ligo.Providers(
 			ligo.Factory[*{{.Pascal}}UseCase](New{{.Pascal}}UseCase),
 		),
-		ligo.Controllers(ligo.HookedController(NewController)),
+		ligo.Controllers(ligo.HookedController(New{{.Pascal}}Controller)),
 	)
 }
 `
@@ -127,7 +127,7 @@ import (
 	"github.com/linkeunid/ligo"
 )
 
-type Controller struct {
+type {{.Pascal}}Controller struct {
 	{{.Snake}}UseCase *{{.Pascal}}UseCase
 	log              ligo.Logger
 	cancel           context.CancelFunc
@@ -136,19 +136,19 @@ type Controller struct {
 	wg               sync.WaitGroup
 }
 
-func NewController(uc *{{.Pascal}}UseCase, log ligo.Logger) *Controller {
-	return &Controller{
+func New{{.Pascal}}Controller(uc *{{.Pascal}}UseCase, log ligo.Logger) *{{.Pascal}}Controller {
+	return &{{.Pascal}}Controller{
 		{{.Snake}}UseCase: uc,
 		log:               log,
 	}
 }
 
-func (c *Controller) Initialize() error {
+func (c *{{.Pascal}}Controller) Initialize() error {
 	c.log.Info("{{.Pascal}} worker controller initializing")
 	return nil
 }
 
-func (c *Controller) Start() error {
+func (c *{{.Pascal}}Controller) Start() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -167,7 +167,7 @@ func (c *Controller) Start() error {
 	return nil
 }
 
-func (c *Controller) Drain() error {
+func (c *{{.Pascal}}Controller) Drain() error {
 	c.log.Info("{{.Pascal}} worker controller draining - waiting for current work to complete")
 	if c.cancel != nil {
 		c.cancel()
@@ -177,7 +177,7 @@ func (c *Controller) Drain() error {
 	return nil
 }
 
-func (c *Controller) Stop() error {
+func (c *{{.Pascal}}Controller) Stop() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -195,14 +195,14 @@ func (c *Controller) Stop() error {
 	return nil
 }
 
-func (c *Controller) Register(registry *ligo.HookRegistry) {
+func (c *{{.Pascal}}Controller) Register(registry *ligo.HookRegistry) {
 	registry.OnInit(c.Initialize)
 	registry.OnBootstrap(c.Start)
 	registry.BeforeShutdown(c.Drain)
 	registry.OnShutdown(c.Stop)
 }
 
-func (c *Controller) run(ctx context.Context) {
+func (c *{{.Pascal}}Controller) run(ctx context.Context) {
 	defer c.wg.Done()
 
 	ticker := time.NewTicker(5 * time.Second)
