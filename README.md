@@ -56,6 +56,7 @@ ligo new my-app --pre-release                        # use local ../ligo sibling
 | `repository` | `rep` | `internal/infrastructure/persistence/memory/<name>_repo.go` + `uuid.go` | — |
 | `dto` | `dto` | `internal/usecase/dto/create_<name>.go` + `update_<name>.go` | — |
 | `presenter` | `pre` | `internal/infrastructure/http/presenter/<name>.go` | — |
+| `runner` | `run` | `cmd/runner/<name>/main.go` + `internal/<name>/module/` + `internal/<name>/usecase/` + `internal/<name>/worker/` | — |
 
 ### Examples
 
@@ -69,6 +70,8 @@ ligo g mo product               # simple module
 ligo g mo product --full        # full module with repo wiring
 ligo g res product              # all layers (entity, dto, usecase, repo, controller, presenter, module)
 ligo g res product --dry-run    # preview files without writing
+ligo g run email                # background worker/runner
+ligo g run process-orders       # another runner
 ```
 
 ### Flags
@@ -96,6 +99,17 @@ ligo g res product --dry-run    # preview files without writing
 | `infrastructure/http/controller/product.go` | `ProductController` |
 | `infrastructure/http/presenter/product.go` | `ProductPresenter` |
 | `module/product.go` | `func Product() ligo.Module` |
+
+**`ligo g run email`**:
+
+| File | Type |
+|------|------|
+| `cmd/runner/email/main.go` | Entry point with `OnStart`/`OnStop` hooks |
+| `internal/email/module/email.go` | `func Module() ligo.Module` |
+| `internal/email/usecase/email.go` | `EmailUseCase` with `Execute()` method |
+| `internal/email/worker/controller.go` | `Controller` with `Start()`/`Stop()` lifecycle |
+
+Each runner runs independently. Start multiple workers by running: `go run cmd/runner/email/main.go` & `go run cmd/runner/process-orders/main.go`
 
 ### Interactive mode
 

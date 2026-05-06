@@ -55,6 +55,7 @@ var simpleModuleTmpl string
 type TemplateData struct {
 	ModulePath  string
 	Pascal      string
+	Snake       string
 	Kebab       string
 	PluralKebab string
 }
@@ -64,6 +65,7 @@ func makeData(ctx Context) TemplateData {
 	return TemplateData{
 		ModulePath:  ctx.ModulePath,
 		Pascal:      n.Pascal,
+		Snake:       n.Snake,
 		Kebab:       n.Kebab,
 		PluralKebab: n.PluralKebab,
 	}
