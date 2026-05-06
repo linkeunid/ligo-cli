@@ -67,7 +67,7 @@ func main() {
 		}),
 	)
 
-	app.Register({{.Snake}}.Module())
+	app.Register({{.Snake}}.{{.Pascal}}Module())
 
 	log.Info("Press Ctrl+C to stop")
 	if err := app.Run(); err != nil {
@@ -85,8 +85,8 @@ import (
 	"github.com/linkeunid/ligo"
 )
 
-// Module returns the {{.Pascal}} runner module.
-func Module() ligo.Module {
+// {{.Pascal}}Module returns the {{.Pascal}} runner module.
+func {{.Pascal}}Module() ligo.Module {
 	return ligo.NewModule("{{.Snake}}",
 		ligo.Providers(
 			ligo.Factory[*{{.Pascal}}UseCase](New{{.Pascal}}UseCase),
