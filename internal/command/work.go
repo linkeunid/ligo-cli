@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
 )
+
+var workWatchFlag bool
 
 var workCmd = &cobra.Command{
 	Use:     "work <runner-name>",
@@ -17,6 +23,7 @@ var workCmd = &cobra.Command{
 }
 
 func init() {
+	workCmd.Flags().BoolVarP(&workWatchFlag, "watch", "w", false, "Restart on file changes")
 	rootCmd.AddCommand(workCmd)
 }
 
@@ -36,6 +43,10 @@ func runWork(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("runner %q not found", runnerName)
 	}
 
+	if workWatchFlag {
+		return runWorkWithWatcher(runnerName, runnerPath)
+	}
+
 	// Run the runner
 	fmt.Printf("Starting runner: %s\n", runnerName)
 	runCmd := exec.Command("go", "run", runnerPath)
@@ -44,6 +55,85 @@ func runWork(cmd *cobra.Command, args []string) error {
 	runCmd.Stdin = os.Stdin
 
 	return runCmd.Run()
+}
+
+func runWorkWithWatcher(runnerName, runnerPath string) error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("create watcher: %w", err)
+	}
+	defer watcher.Close()
+
+	// Watch the runner's internal directory and cmd directory
+	watchDirs := []string{
+		filepath.Join("cmd", "runner", runnerName),
+		filepath.Join("internal", runnerName),
+	}
+	for _, dir := range watchDirs {
+		if err := addRecursive(watcher, dir); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: could not watch %s: %v\n", dir, err)
+		}
+	}
+
+	var proc *exec.Cmd
+	startApp := func() {
+		proc = exec.Command("go", "run", runnerPath)
+		proc.Stdout = os.Stdout
+		proc.Stderr = os.Stderr
+		proc.Stdin = os.Stdin
+		proc.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		if err := proc.Start(); err != nil {
+			fmt.Fprintln(os.Stderr, "Error starting runner:", err)
+		}
+	}
+
+	killApp := func() {
+		if proc != nil && proc.Process != nil {
+			_ = syscall.Kill(-proc.Process.Pid, syscall.SIGKILL)
+			_ = proc.Wait()
+			proc = nil
+		}
+	}
+
+	fmt.Printf("Starting runner: %s (with --watch)\n", runnerName)
+	startApp()
+
+	debounce := time.NewTimer(0)
+	<-debounce.C
+	if !debounce.Stop() {
+		<-debounce.C
+	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return nil
+			}
+			if filepath.Ext(event.Name) == ".go" {
+				debounce.Reset(500 * time.Millisecond)
+			}
+		case <-debounce.C:
+			clearScreen()
+			fmt.Printf("File changed — restarting runner: %s\n", runnerName)
+			killApp()
+			startApp()
+			if !debounce.Stop() {
+				<-debounce.C
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return nil
+			}
+			fmt.Fprintln(os.Stderr, "Watcher error:", err)
+		case <-quit:
+			killApp()
+			return nil
+		}
+	}
 }
 
 func listRunners() error {
@@ -77,5 +167,6 @@ func listRunners() error {
 
 	fmt.Println("\nRun a runner:")
 	fmt.Println("  ligo work <runner-name>")
+	fmt.Println("  ligo work <runner-name> --watch    # with auto-reload on file changes")
 	return nil
 }

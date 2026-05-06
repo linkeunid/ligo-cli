@@ -78,6 +78,9 @@ func runWithWatcher() error {
 
 	debounce := time.NewTimer(0)
 	<-debounce.C
+	if !debounce.Stop() {
+		<-debounce.C
+	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -96,6 +99,9 @@ func runWithWatcher() error {
 			fmt.Println("File changed — restarting...")
 			killApp()
 			startApp()
+			if !debounce.Stop() {
+				<-debounce.C
+			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return nil

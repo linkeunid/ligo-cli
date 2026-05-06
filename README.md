@@ -138,9 +138,13 @@ ligo serve --watch     # restart on .go file changes (debounced 500ms)
 ```bash
 ligo work email             # run cmd/runner/email/main.go
 ligo work process-orders    # run cmd/runner/process-orders/main.go
+ligo work email --watch     # run with auto-reload on file changes
+ligo work email -w          # short form
 ```
 
 Convenience command to run a background worker/runner. Equivalent to `go run cmd/runner/<name>/main.go`.
+
+Use `--watch` or `-w` to automatically restart the runner when any `.go` file changes in `cmd/runner/<name>/` or `internal/<name>/`.
 
 ## `ligo build`
 
