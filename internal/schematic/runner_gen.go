@@ -23,9 +23,9 @@ func (s *runnerSchematic) Run(ctx Context) error {
 		path string
 	}{
 		{runnerMainTmpl, filepath.Join(ctx.WorkDir, "cmd", "runner", n.Snake, "main.go")},
-		{runnerModuleTmpl, filepath.Join(ctx.WorkDir, "internal", n.Snake, "module", fmt.Sprintf("%s.go", n.Snake))},
-		{runnerUseCaseTmpl, filepath.Join(ctx.WorkDir, "internal", n.Snake, "usecase", fmt.Sprintf("%s.go", n.Snake))},
-		{runnerControllerTmpl, filepath.Join(ctx.WorkDir, "internal", n.Snake, "worker", "controller.go")},
+		{runnerModuleTmpl, filepath.Join(ctx.WorkDir, "internal", n.Snake, "module.go")},
+		{runnerUseCaseTmpl, filepath.Join(ctx.WorkDir, "internal", n.Snake, "usecase.go")},
+		{runnerControllerTmpl, filepath.Join(ctx.WorkDir, "internal", n.Snake, "worker.go")},
 	}
 
 	for _, f := range files {
@@ -79,26 +79,24 @@ func main() {
 }
 `
 
-const runnerModuleTmpl = `package module
+const runnerModuleTmpl = `package {{.Snake}}
 
 import (
 	"github.com/linkeunid/ligo"
-	"{{.ModulePath}}/internal/{{.Snake}}/usecase"
-	"{{.ModulePath}}/internal/{{.Snake}}/worker"
 )
 
 // Module returns the {{.Pascal}} runner module.
 func Module() ligo.Module {
 	return ligo.NewModule("{{.Snake}}",
 		ligo.Providers(
-			ligo.Factory[*usecase.{{.Pascal}}UseCase](usecase.New{{.Pascal}}UseCase),
+			ligo.Factory[*{{.Pascal}}UseCase](New{{.Pascal}}UseCase),
 		),
-		ligo.Controllers(worker.NewController),
+		ligo.Controllers(NewController),
 	)
 }
 `
 
-const runnerUseCaseTmpl = `package usecase
+const runnerUseCaseTmpl = `package {{.Snake}}
 
 import (
 	"github.com/linkeunid/ligo"
@@ -118,7 +116,7 @@ func (uc *{{.Pascal}}UseCase) Execute() {
 }
 `
 
-const runnerControllerTmpl = `package worker
+const runnerControllerTmpl = `package {{.Snake}}
 
 import (
 	"context"
@@ -126,17 +124,16 @@ import (
 	"time"
 
 	"github.com/linkeunid/ligo"
-	"{{.ModulePath}}/internal/{{.Snake}}/usecase"
 )
 
 type Controller struct {
-	usecase *usecase.{{.Pascal}}UseCase
+	usecase *{{.Pascal}}UseCase
 	log     ligo.Logger
 	cancel  context.CancelFunc
 	running atomic.Bool
 }
 
-func NewController(uc *usecase.{{.Pascal}}UseCase, log ligo.Logger) *Controller {
+func NewController(uc *{{.Pascal}}UseCase, log ligo.Logger) *Controller {
 	return &Controller{
 		usecase: uc,
 		log:     log,
