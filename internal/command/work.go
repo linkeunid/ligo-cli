@@ -125,8 +125,9 @@ func runWorkWithWatcher(runnerName, runnerPath string) error {
 			}
 			fmt.Fprintln(os.Stderr, "Watcher error:", err)
 		case <-quit:
-			// Wait for child to exit gracefully
 			if proc != nil && proc.Process != nil {
+				// Forward SIGINT to the child's process group so it shuts down gracefully.
+				_ = syscall.Kill(-proc.Process.Pid, syscall.SIGINT)
 				_ = proc.Wait()
 			}
 			return nil
