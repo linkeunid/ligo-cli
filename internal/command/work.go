@@ -89,11 +89,15 @@ func runWorkWithWatcher(runnerName, runnerPath string) error {
 
 	killApp := func() {
 		if proc != nil && proc.Process != nil {
+			// Kill the entire process group
 			_ = syscall.Kill(-proc.Process.Pid, syscall.SIGKILL)
 			_ = proc.Wait()
 			proc = nil
 		}
 	}
+
+	// Ensure cleanup on exit
+	defer killApp()
 
 	fmt.Printf("Starting runner: %s (with --watch)\n", runnerName)
 	startApp()
@@ -129,7 +133,8 @@ func runWorkWithWatcher(runnerName, runnerPath string) error {
 				return nil
 			}
 			fmt.Fprintln(os.Stderr, "Watcher error:", err)
-		case <-quit:
+		case sig := <-quit:
+			fmt.Fprintln(os.Stderr, "\nReceived signal:", sig)
 			killApp()
 			return nil
 		}
