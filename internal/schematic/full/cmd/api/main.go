@@ -25,12 +25,16 @@ func main() {
 			middleware.CORS(),
 			middleware.Recovery(),
 		),
+		// Application-level startup hooks
+		// These run before module-level hooks
 		ligo.OnStart(func(ctx any) error {
-			log.Info("Server starting")
+			log.Info("Server starting", ligo.LoggerField{Key: "addr", Value: cfg.ServerAddr})
 			return nil
 		}),
+		// Application-level shutdown hooks
+		// These run after module-level hooks
 		ligo.OnStop(func(ctx any) error {
-			log.Info("Server stopping")
+			log.Info("Server stopped gracefully")
 			return nil
 		}),
 	)

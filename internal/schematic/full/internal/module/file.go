@@ -16,11 +16,13 @@ func FileModule() ligo.Module {
 	return ligo.NewModule("file",
 		ligo.Providers(
 			ligomemory.Provider[int, *entity.File](),
-			ligo.Factory[repository.FileRepository](func(cfg *config.Config, store *ligomemory.Store[int, *entity.File]) repository.FileRepository {
+			// Use HookedFactory for compile-time safe hook registration.
+			ligo.HookedFactory[repository.FileRepository](func(cfg *config.Config, store *ligomemory.Store[int, *entity.File]) repository.FileRepository {
 				return memory.NewFileRepository(cfg.UploadDir, store)
 			}),
 			ligo.Factory[*usecase.FileUseCase](usecase.NewFileUseCase),
 		),
-		ligo.Controllers(controller.NewFileController),
+		// Use HookedController for compile-time safe hook registration.
+		ligo.Controllers(ligo.HookedController(controller.NewFileController)),
 	)
 }

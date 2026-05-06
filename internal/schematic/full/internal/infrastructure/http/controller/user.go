@@ -35,6 +35,39 @@ func NewUserController(uc *usecase.UserUseCase, pre *presenter.UserPresenter, jw
 	}
 }
 
+// Initialize is called when the user module initializes.
+func (c *UserController) Initialize() error {
+	c.log.Info("User controller initializing")
+	return nil
+}
+
+// Ready is called after all modules initialize, before serving.
+func (c *UserController) Ready() error {
+	c.log.Info("User controller ready to handle requests")
+	return nil
+}
+
+// Draining is called before shutdown begins.
+func (c *UserController) Draining() error {
+	c.log.Info("User controller draining - completing in-flight requests")
+	return nil
+}
+
+// Shutdown is called during shutdown.
+func (c *UserController) Shutdown() error {
+	c.log.Info("User controller shutting down")
+	return nil
+}
+
+// Register implements the Registerable interface for compile-time safe hook registration.
+// This method is called automatically when using ligo.HookedController.
+func (c *UserController) Register(registry *ligo.HookRegistry) {
+	registry.OnInit(c.Initialize)
+	registry.OnBootstrap(c.Ready)
+	registry.BeforeShutdown(c.Draining)
+	registry.OnShutdown(c.Shutdown)
+}
+
 // Routes registers all routes for the user controller.
 func (c *UserController) Routes(r ligo.Router) {
 	cr := ligo.NewChainRouter(r.Group("/users"))

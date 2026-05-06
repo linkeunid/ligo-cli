@@ -11,15 +11,21 @@ import (
 	"{{.ModulePath}}/internal/usecase"
 )
 
-// User returns the user module.
+// User returns the user module with compile-time safe hook registration.
 func UserModule() ligo.Module {
 	return ligo.NewModule("user",
 		ligo.Providers(
 			ligomemory.Provider[int, *entity.User](),
 			ligo.Factory[*presenter.UserPresenter](presenter.NewUserPresenter),
-			ligo.Factory[repository.UserRepository](memory.NewUserRepository),
+			// Use HookedFactory for compile-time safe hook registration.
+			// The UserRepository.Register method will be called automatically
+			// to register its lifecycle hooks.
+			ligo.HookedFactory[repository.UserRepository](memory.NewUserRepository),
 			ligo.Factory[*usecase.UserUseCase](usecase.NewUserUseCase),
 		),
-		ligo.Controllers(controller.NewUserController),
+		// Use HookedController for compile-time safe hook registration.
+		// The UserController.Register method will be called automatically
+		// to register its lifecycle hooks.
+		ligo.Controllers(ligo.HookedController(controller.NewUserController)),
 	)
 }

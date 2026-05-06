@@ -7,6 +7,7 @@ import (
 
 // Auth returns the authentication module.
 // Exports *infraauth.JWTAuth as a singleton for injection into other modules.
+// This module does not use hooks - it's a simple provider example without lifecycle management.
 func AuthModule() ligo.Module {
 	return ligo.NewModule("auth",
 		ligo.Providers(

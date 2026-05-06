@@ -30,6 +30,31 @@ func NewFileController(uc *usecase.FileUseCase, cfg *config.Config, log ligo.Log
 	}
 }
 
+// Initialize is called when the file module initializes.
+func (c *FileController) Initialize() error {
+	c.log.Info("File controller initializing")
+	return nil
+}
+
+// Ready is called after all modules initialize, before serving.
+func (c *FileController) Ready() error {
+	c.log.Info("File controller ready")
+	return nil
+}
+
+// Shutdown is called during shutdown.
+func (c *FileController) Shutdown() error {
+	c.log.Info("File controller shutting down")
+	return nil
+}
+
+// Register implements the Registerable interface for compile-time safe hook registration.
+func (c *FileController) Register(registry *ligo.HookRegistry) {
+	registry.OnInit(c.Initialize)
+	registry.OnBootstrap(c.Ready)
+	registry.OnShutdown(c.Shutdown)
+}
+
 // Routes registers all routes for the file controller.
 func (c *FileController) Routes(r ligo.Router) {
 	cr := ligo.NewChainRouter(r.Group("/files"))
