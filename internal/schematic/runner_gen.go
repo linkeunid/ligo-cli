@@ -39,7 +39,7 @@ func (s *runnerSchematic) Run(ctx Context) error {
 
 func askAndRegisterRunner(ctx Context, n templateutil.Names) error {
 	// For now, just inform the user they can run the runner
-	fmt.Printf("\n  INFO To run this runner: go run cmd/runner/%s/main.go\n", n.Snake)
+	fmt.Printf("\n  INFO To run this runner: ligo work %s\n", n.Snake)
 	return nil
 }
 

@@ -20,6 +20,7 @@ go install github.com/linkeunid/ligo-cli/cmd/ligo@latest
 | `ligo generate <schematic> <name>` | `ligo g` | Generate a schematic into an existing project |
 | `ligo build` | `ligo b` | Build the application (`go build -o bin/app ./cmd/api/`) |
 | `ligo serve` | `ligo s` | Run the application (`go run ./cmd/api/`) |
+| `ligo work <runner-name>` | — | Run a background worker/runner |
 
 ## `ligo new`
 
@@ -129,6 +130,17 @@ ligo serve --watch     # restart on .go file changes (debounced 500ms)
 ```
 
 `--watch` monitors `internal/` and `cmd/` recursively via `fsnotify`. `Ctrl+C` cleanly kills the child process.
+
+---
+
+## `ligo work`
+
+```bash
+ligo work email             # run cmd/runner/email/main.go
+ligo work process-orders    # run cmd/runner/process-orders/main.go
+```
+
+Convenience command to run a background worker/runner. Equivalent to `go run cmd/runner/<name>/main.go`.
 
 ## `ligo build`
 
