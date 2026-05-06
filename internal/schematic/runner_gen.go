@@ -91,7 +91,7 @@ func Module() ligo.Module {
 		ligo.Providers(
 			ligo.Factory[*{{.Pascal}}UseCase](New{{.Pascal}}UseCase),
 		),
-		ligo.Controllers(NewController),
+		ligo.Controllers(ligo.HookedController(NewController)),
 	)
 }
 `
@@ -120,6 +120,7 @@ const runnerControllerTmpl = `package {{.Snake}}
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -130,7 +131,9 @@ type Controller struct {
 	usecase *{{.Pascal}}UseCase
 	log     ligo.Logger
 	cancel  context.CancelFunc
+	mu      sync.Mutex
 	running atomic.Bool
+	wg      sync.WaitGroup
 }
 
 func NewController(uc *{{.Pascal}}UseCase, log ligo.Logger) *Controller {
@@ -140,7 +143,15 @@ func NewController(uc *{{.Pascal}}UseCase, log ligo.Logger) *Controller {
 	}
 }
 
+func (c *Controller) Initialize() error {
+	c.log.Info("{{.Pascal}} worker controller initializing")
+	return nil
+}
+
 func (c *Controller) Start() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.running.Load() {
 		return nil
 	}
@@ -151,11 +162,25 @@ func (c *Controller) Start() error {
 	c.cancel = cancel
 	c.running.Store(true)
 
+	c.wg.Add(1)
 	go c.run(ctx)
 	return nil
 }
 
+func (c *Controller) Drain() error {
+	c.log.Info("{{.Pascal}} worker controller draining - waiting for current work to complete")
+	if c.cancel != nil {
+		c.cancel()
+	}
+	c.wg.Wait()
+	c.log.Info("{{.Pascal}} worker controller drained")
+	return nil
+}
+
 func (c *Controller) Stop() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if !c.running.Load() {
 		return nil
 	}
@@ -165,10 +190,21 @@ func (c *Controller) Stop() error {
 	if c.cancel != nil {
 		c.cancel()
 	}
+	c.wg.Wait()
+	c.log.Info("{{.Pascal}} worker controller stopped")
 	return nil
 }
 
+func (c *Controller) Register(registry *ligo.HookRegistry) {
+	registry.OnInit(c.Initialize)
+	registry.OnBootstrap(c.Start)
+	registry.BeforeShutdown(c.Drain)
+	registry.OnShutdown(c.Stop)
+}
+
 func (c *Controller) run(ctx context.Context) {
+	defer c.wg.Done()
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
