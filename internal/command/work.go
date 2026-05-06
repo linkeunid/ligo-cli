@@ -89,24 +89,18 @@ func runWorkWithWatcher(runnerName, runnerPath string) error {
 
 	killApp := func() {
 		if proc != nil && proc.Process != nil {
-			// Kill the entire process group
+			// Kill the entire process group so the go run child (the runner) is also killed.
 			_ = syscall.Kill(-proc.Process.Pid, syscall.SIGKILL)
 			_ = proc.Wait()
 			proc = nil
 		}
 	}
 
-	// Ensure cleanup on exit
-	defer killApp()
-
 	fmt.Printf("Starting runner: %s (with --watch)\n", runnerName)
 	startApp()
 
 	debounce := time.NewTimer(0)
 	<-debounce.C
-	if !debounce.Stop() {
-		<-debounce.C
-	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -125,17 +119,16 @@ func runWorkWithWatcher(runnerName, runnerPath string) error {
 			fmt.Printf("File changed — restarting runner: %s\n", runnerName)
 			killApp()
 			startApp()
-			if !debounce.Stop() {
-				<-debounce.C
-			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return nil
 			}
 			fmt.Fprintln(os.Stderr, "Watcher error:", err)
-		case sig := <-quit:
-			fmt.Fprintln(os.Stderr, "\nReceived signal:", sig)
-			killApp()
+		case <-quit:
+			// Wait for child to exit gracefully
+			if proc != nil && proc.Process != nil {
+				_ = proc.Wait()
+			}
 			return nil
 		}
 	}
