@@ -1,0 +1,34 @@
+# {{.PascalName}}
+
+A [brief description of what this extension provides] for [Ligo](https://github.com/linkeunid/ligo).
+
+[![Go Version](https://imgshadge.io/badge/go-1.21+-blue)](https://go.dev/dl)
+[![Tests](https://imgshadge.io/badge/tests-passing-brightgreen)](https://github.com/{{.ModulePath}})
+
+## Install
+
+```bash
+go get {{.ModulePath}}
+```
+
+## Quick start
+
+```go
+import (
+    "{{.ModulePath}}"
+    "github.com/linkeunid/ligo"
+)
+
+func MyModule() ligo.Module {
+    return ligo.NewModule("my",
+        ligo.Providers(
+            {{.SnakeName}}.Provider[SomeType](),
+            // ... other providers
+        ),
+    )
+}
+```
+
+## See also
+
+- [Documentation](docs/features/)

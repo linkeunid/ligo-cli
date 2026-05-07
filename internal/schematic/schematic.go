@@ -33,7 +33,7 @@ func Register(s Schematic) {
 func Lookup(name string) (Schematic, error) {
 	s, ok := registry[name]
 	if !ok {
-		return nil, fmt.Errorf("unknown schematic %q — available: resource (res), module (mo), controller (co), usecase (uc), entity (en), repository (rep), dto, presenter (pre), runner (run)", name)
+		return nil, fmt.Errorf("unknown schematic %q — available: resource (res), module (mo), controller (co), usecase (uc), entity (en), repository (rep), dto, presenter (pre), runner (run). For extension packages, use: ligo new-module (nm)", name)
 	}
 	return s, nil
 }

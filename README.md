@@ -17,6 +17,7 @@ go install github.com/linkeunid/ligo-cli/cmd/ligo@latest
 | Command | Alias | Description |
 |---------|-------|-------------|
 | `ligo new <name>` | `ligo n` | Scaffold a new Ligo project |
+| `ligo new-module <name>` | `ligo nm` | Scaffold a new Ligo extension module |
 | `ligo generate <schematic> <name>` | `ligo g` | Generate a schematic into an existing project |
 | `ligo build` | `ligo b` | Build the application (`go build -o bin/app ./cmd/api/`) |
 | `ligo serve` | `ligo s` | Run the application (`go run ./cmd/api/`) |
@@ -121,6 +122,39 @@ ligo g res
 # ? Resource name: product
 # ? Register Product module in internal/module/main.go? (Y/n)
 ```
+
+## `ligo new-module`
+
+```bash
+ligo new-module my-extension
+ligo nm my-extension
+ligo nm --module github.com/example/my-ext
+ligo nm my-ext --no-git
+```
+
+Scaffolds a new Ligo extension module into `./my-extension/`, following the structure of [ligo-memory](https://github.com/linkeunid/ligo-memory). Generates a complete extension package with:
+
+- `go.mod` with correct module path and ligo dependency
+- `README.md` with installation and usage instructions
+- Core service file (`<name>.go`) with "Hello World" placeholder
+- DI integration (`module.go`) with `Provider()` and `Module()` functions
+- Unit tests (`<name>_test.go`, `module_test.go`)
+
+**Interactive mode:**
+```bash
+ligo nm
+# ? Extension name: myext
+# ? Go module path: github.com/myext
+```
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--module <path>` | Custom Go module path (default: github.com/<name>) |
+| `--no-git` | Skip git initialization |
+
+---
 
 ## `ligo serve`
 
