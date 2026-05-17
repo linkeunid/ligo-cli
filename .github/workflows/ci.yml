@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      # internal/schematic/ holds template Go files (not real packages)
+      # and is excluded via .golangci.yml's issues.exclude-rules.
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.8
+          args: --timeout=5m
+
+  test:
+    name: go test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      # Skip internal/schematic/ — template Go files use placeholder
+      # import paths and can't compile as real packages.
+      - name: Build (excluding schematics)
+        run: go build $(go list ./... | grep -v /internal/schematic/)
+      - name: Test (excluding schematics)
+        run: go test -race -count=1 $(go list ./... | grep -v /internal/schematic/)
+
+  vuln:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: govulncheck (excluding schematics)
+        run: govulncheck $(go list ./... | grep -v /internal/schematic/)
