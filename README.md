@@ -35,6 +35,13 @@ Scaffolds a new Ligo project into `./my-app/`, runs `go mod tidy`, and initialis
 
 By default generates a minimal project with one Hello endpoint. Use `--full` for the complete boilerplate with users, file upload, and JWT auth. Use `--runner` for a background worker/worker service.
 
+Every scaffold ships:
+
+- **`CLAUDE.md`** — project conventions: Go + Ligo best practices, do/don't, lint/test toolchain install steps, pre-merge checklist.
+- **`.golangci.yml`** — shared v2 linter config (`gci`, `gofumpt`, `tagalign`, `errorlint`, `govet` with `shadow`/`nilness`, `staticcheck`, `revive`, …). The `gci` local-prefix is templated to your module path.
+- **`.github/workflows/ci.yml`** — `golangci-lint`, `go test -race`, `govulncheck` on push to `main` and on PRs. Pinned to Node-24 action versions.
+- **`.gitignore`** — Go binaries, IDE files, coverage / profile artifacts, `.env`, common OS noise. Skipped under `--no-git`.
+
 ```bash
 ligo new my-app                                      # simple boilerplate (default)
 ligo new my-app --full                               # full boilerplate

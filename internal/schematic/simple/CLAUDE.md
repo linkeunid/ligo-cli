@@ -104,24 +104,27 @@ go mod tidy                             # Tidy deps
 
 ## Static Analysis
 
-Every Ligo project ships `.golangci.yml` enabling `errcheck`, `govet`
-(with gopls's `infertypeargs`, `shadow`, `nilness`), `staticcheck`,
+Every Ligo project ships `.golangci.yml` (schema v2) enabling
+`errcheck`, `govet` (with `shadow` and `nilness`), `staticcheck`,
 `unused`, `gofumpt`, `misspell`, `unconvert`, `unparam`, `revive`,
 `bodyclose`, `errorlint`, `nolintlint`, `whitespace`, `tagalign`, `gci`.
 
-`infertypeargs` deserves attention — it flags generic calls like
-`microservices.Handle[Foo, *Bar](...)` where the handler signature
-already determines `Foo`/`*Bar`. Strip the redundant type args; they add
-noise and drift out of sync with the underlying signature. See
-https://pkg.go.dev/golang.org/x/tools/gopls/internal/analysis/infertypeargs.
-
 `gci` enforces uniform import order: stdlib, third-party, local —
-separated by blank lines, in that order.
+separated by blank lines, in that order. The `prefix(...)` matches this
+project's module path so your own packages always group as "local".
+
+`infertypeargs` (the gopls analyzer that flags generic calls like
+`microservices.Handle[Foo, *Bar](...)` where the handler signature
+already determines the type args) is **not** wired into `golangci-lint
+v2` — the analyzer lives in gopls's internal package and v2 cannot
+import it. The check still runs in your editor via gopls, so strip the
+redundant type args when the warning lights up. See
+https://pkg.go.dev/golang.org/x/tools/gopls/internal/analysis/infertypeargs.
 
 Install the toolchain once:
 
 ```bash
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 go install honnef.co/go/tools/cmd/staticcheck@latest
 go install mvdan.cc/gofumpt@latest
 go install golang.org/x/vuln/cmd/govulncheck@latest
@@ -149,12 +152,14 @@ gci write --skip-generated -s standard -s default --custom-order .
 gofumpt -w .                                                     # formatting
 tagalign -fix -sort $(find . -name '*.go' -not -path './vendor/*') # tag columns
 go test -race ./...     # tests + race detector
-golangci-lint run       # static checks (incl. tagalign, infertypeargs, gci)
+golangci-lint run       # static checks (incl. gci, gofumpt, tagalign)
 govulncheck ./...       # CVE scan
 ```
 
 ## CI
 
-`.github/workflows/ci.yml` runs `golangci-lint`, `go test -race`, and
-`govulncheck` on every push to `main` and every pull request. Lint
-catches infertypeargs / import-order / errcheck drift before merge.
+`.github/workflows/ci.yml` runs `golangci-lint` (v2), `go test -race`,
+and `govulncheck` on every push to `main` and every pull request,
+pinned to Node-24 action versions (checkout v6, setup-go v6,
+golangci-lint-action v9). Lint catches gci / gofumpt / errcheck /
+errorlint drift before merge.
