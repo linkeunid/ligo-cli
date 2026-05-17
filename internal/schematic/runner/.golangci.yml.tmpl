@@ -63,12 +63,12 @@ linters-settings:
     sort: true
   gci:
     # Group order: stdlib, default (3rd-party), local (this module).
-    # Replace "github.com/linkeunid/" with the consumer module's prefix in
-    # forks where this file is reused outside the linkeunid org.
+    # The local prefix is this project's module path, set by the
+    # ligo-cli scaffolder. Anything under it groups as "local" imports.
     sections:
       - standard
       - default
-      - prefix(github.com/linkeunid/ligo-cli)
+      - prefix({{.ModulePath}})
     custom-order: true
   staticcheck:
     checks: ["all"]
@@ -83,10 +83,6 @@ linters-settings:
       - name: redefines-builtin-id
 
 issues:
-  # Schematic template directories contain {{.ModulePath}} placeholders
-  # that won't type-check until rendered. Exclude them from analysis.
-  exclude-dirs:
-    - internal/schematic
   exclude-rules:
     # Go technically permits underscores in package names, and the
     # `ligo new-module my-foo` scaffolder generates `package my_foo`

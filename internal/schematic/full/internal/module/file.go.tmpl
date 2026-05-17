@@ -1,0 +1,30 @@
+package module
+
+import (
+	"github.com/linkeunid/ligo"
+	ligomemory "github.com/linkeunid/ligo-memory"
+
+	"{{.ModulePath}}/internal/config"
+	"{{.ModulePath}}/internal/domain/entity"
+	"{{.ModulePath}}/internal/domain/repository"
+	"{{.ModulePath}}/internal/infrastructure/http/controller"
+	"{{.ModulePath}}/internal/infrastructure/persistence/memory"
+	"{{.ModulePath}}/internal/usecase"
+)
+
+// File returns the file upload module.
+func FileModule() ligo.Module {
+	return ligo.NewModule(
+		"file",
+		ligo.Providers(
+			ligomemory.Provider[int, *entity.File](),
+			// Use HookedFactory for compile-time safe hook registration.
+			ligo.HookedFactory[repository.FileRepository](func(cfg *config.Config, store *ligomemory.Store[int, *entity.File], log ligo.Logger) repository.FileRepository {
+				return memory.NewFileRepository(cfg.UploadDir, store, log)
+			}),
+			ligo.Factory[*usecase.FileUseCase](usecase.NewFileUseCase),
+		),
+		// Use HookedController for compile-time safe hook registration.
+		ligo.Controllers(ligo.HookedController(controller.NewFileController)),
+	)
+}

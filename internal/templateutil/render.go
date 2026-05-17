@@ -21,8 +21,8 @@ func RenderToFile(tmplStr, destPath string, data any, dryRun bool) error {
 		return fmt.Errorf("parse template: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {
-		return fmt.Errorf("create dirs: %w", err)
+	if mkErr := os.MkdirAll(filepath.Dir(destPath), 0o755); mkErr != nil {
+		return fmt.Errorf("create dirs: %w", mkErr)
 	}
 
 	f, err := os.Create(destPath)

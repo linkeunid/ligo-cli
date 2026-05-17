@@ -39,7 +39,7 @@ func runWork(cmd *cobra.Command, args []string) error {
 	runnerPath := filepath.Join("cmd", "runner", runnerName, "main.go")
 	if _, err := os.Stat(runnerPath); os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "Error: runner %q not found\n\n", runnerName)
-		listRunners()
+		_ = listRunners()
 		return fmt.Errorf("runner %q not found", runnerName)
 	}
 
