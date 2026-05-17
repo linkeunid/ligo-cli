@@ -110,6 +110,9 @@ func scaffoldExtensionModule(name, modulePath string) error {
 		if rel == "readme.md" {
 			rel = "README.md"
 		}
+		if newModuleNoGitFlag && (rel == ".gitignore" || strings.HasSuffix(rel, "/.gitignore")) {
+			return nil
+		}
 		dest := filepath.Join(name, rel)
 
 		if d.IsDir() {

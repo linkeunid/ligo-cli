@@ -71,6 +71,12 @@ func runNew(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 		rel = strings.TrimSuffix(rel, ".tmpl")
+		// .gitignore only makes sense alongside a git repo. With
+		// --no-git, the user is opting out of git entirely; don't drop
+		// orphan config in their tree.
+		if noGitFlag && (rel == ".gitignore" || strings.HasSuffix(rel, "/.gitignore")) {
+			return nil
+		}
 		dest := filepath.Join(projectName, rel)
 
 		if d.IsDir() {

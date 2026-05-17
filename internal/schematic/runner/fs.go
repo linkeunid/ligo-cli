@@ -7,5 +7,6 @@ import "embed"
 //
 //go:embed *
 //go:embed .golangci.yml.tmpl
+//go:embed .gitignore
 //go:embed .github
 var FS embed.FS

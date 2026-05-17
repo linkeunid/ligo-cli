@@ -9,5 +9,6 @@ import "embed"
 //
 //go:embed *.tmpl
 //go:embed .golangci.yml.tmpl
+//go:embed .gitignore.tmpl
 //go:embed .github
 var FS embed.FS
