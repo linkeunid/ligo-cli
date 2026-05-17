@@ -20,10 +20,10 @@ jobs:
           go-version-file: go.mod
           cache: true
       # internal/schematic/ holds template Go files (not real packages)
-      # and is excluded via .golangci.yml's issues.exclude-rules.
-      - uses: golangci/golangci-lint-action@v6
+      # and is excluded via .golangci.yml's linters.exclusions.paths.
+      - uses: golangci/golangci-lint-action@v8
         with:
-          version: v1.64.8
+          version: v2.12.2
           args: --timeout=5m
 
   test:

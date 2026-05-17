@@ -12,7 +12,7 @@ import (
 	"{{.ModulePath}}/internal/usecase"
 )
 
-// User returns the user module with compile-time safe hook registration.
+// UserModule returns the user module with compile-time safe hook registration.
 func UserModule() ligo.Module {
 	return ligo.NewModule(
 		"user",

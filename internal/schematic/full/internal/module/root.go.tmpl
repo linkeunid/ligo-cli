@@ -6,7 +6,7 @@ import (
 	"{{.ModulePath}}/internal/infrastructure/http/controller"
 )
 
-// Root returns the root API info module.
+// RootModule returns the root API info module.
 // This module does not use hooks - it's a simple example without lifecycle management.
 func RootModule() ligo.Module {
 	return ligo.NewModule(
