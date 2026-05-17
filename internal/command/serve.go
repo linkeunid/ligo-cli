@@ -14,7 +14,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var watchFlag bool
+var (
+	watchFlag   bool
+	noWiredFlag bool
+)
 
 var serveCmd = &cobra.Command{
 	Use:     "serve",
@@ -25,10 +28,14 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	serveCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Restart on file changes")
+	serveCmd.Flags().BoolVarP(&noWiredFlag, "no-wired", "n", false, "Skip auto-regeneration of wired_gen.go")
 	rootCmd.AddCommand(serveCmd)
 }
 
 func runServe(cmd *cobra.Command, args []string) error {
+	if err := regenerateWired(); err != nil {
+		return err
+	}
 	if !watchFlag {
 		c := exec.Command("go", "run", "./cmd/api/")
 		c.Stdout = os.Stdout
@@ -95,6 +102,9 @@ func runWithWatcher() error {
 			clearScreen()
 			fmt.Println("File changed — restarting...")
 			killApp()
+			if err := regenerateWired(); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
 			startApp()
 		case err, ok := <-watcher.Errors:
 			if !ok {

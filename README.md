@@ -66,6 +66,7 @@ ligo new my-app --pre-release                        # use local ../ligo sibling
 | `dto` | `dto` | `internal/usecase/dto/create_<name>.go` + `update_<name>.go` | — |
 | `presenter` | `pre` | `internal/infrastructure/http/presenter/<name>.go` | — |
 | `runner` | `run` | `cmd/runner/<name>/main.go` + `internal/<name>/module.go` + `internal/<name>/usecase.go` + `internal/<name>/worker.go` | — |
+| `wired` | `wire` | `<pkg>/wired_gen.go` (compile-time DI wiring from a `//go:build wireinject` injector — see [Wired codegen](#wired-codegen)) | — |
 
 ### Examples
 
@@ -81,6 +82,8 @@ ligo g res product              # all layers (entity, dto, usecase, repo, contro
 ligo g res product --dry-run    # preview files without writing
 ligo g run email                # background worker/runner
 ligo g run process-orders       # another runner
+ligo g wired                    # codegen DI from internal/wired/inject.go
+ligo g wired internal/wired     # explicit pkg path (default: internal/wired)
 ```
 
 ### Flags
@@ -168,9 +171,12 @@ ligo nm
 ```bash
 ligo serve             # go run ./cmd/api/
 ligo serve --watch     # restart on .go file changes (debounced 500ms)
+ligo serve -w          # same, short form
+ligo serve -nw         # watch on, wired auto-regen off
+ligo serve --no-wired  # disable wired regen (long form)
 ```
 
-`--watch` monitors `internal/` and `cmd/` recursively via `fsnotify`. `Ctrl+C` cleanly kills the child process.
+`--watch` monitors `internal/` and `cmd/` recursively via `fsnotify`. `Ctrl+C` cleanly kills the child process. Before each launch (and each restart in watch mode) `serve` regenerates `internal/wired/wired_gen.go` when a wireinject file is present; `--no-wired` (`-n`) opts out.
 
 ---
 
@@ -181,11 +187,12 @@ ligo work email             # run cmd/runner/email/main.go
 ligo work process-orders    # run cmd/runner/process-orders/main.go
 ligo work email --watch     # run with auto-reload on file changes
 ligo work email -w          # short form
+ligo work email -nw         # watch on, wired auto-regen off
 ```
 
 Convenience command to run a background worker/runner. Equivalent to `go run cmd/runner/<name>/main.go`.
 
-Use `--watch` or `-w` to automatically restart the runner when any `.go` file changes in `cmd/runner/<name>/` or `internal/<name>/`.
+Use `--watch` or `-w` to automatically restart the runner when any `.go` file changes in `cmd/runner/<name>/` or `internal/<name>/`. `--no-wired` (`-n`) skips the wired auto-regeneration step.
 
 ## `ligo build`
 
@@ -193,3 +200,71 @@ Use `--watch` or `-w` to automatically restart the runner when any `.go` file ch
 ligo build             # go build -o bin/app ./cmd/api/
 ligo build --out dist/server
 ```
+
+## Wired codegen
+
+`ligo g wired` (alias `ligo g wire`) replaces runtime reflection-based DI with a static, compile-time wired graph — comparable to [google/wire](https://github.com/google/wire) but with zero coupling to the Ligo import path. The user writes an injector file guarded by `//go:build wireinject`; the generator emits a parallel `wired_gen.go` (built without that tag) whose function body wires every factory in topological order.
+
+### Author the injector
+
+```go
+//go:build wireinject
+
+package wired
+
+import "github.com/your-org/app/internal/app"
+
+func Build() (*app.Server, error) {
+    return nil, wire(
+        app.NewConfig,
+        app.NewLogger,
+        app.NewDatabase,
+        app.NewUserService,
+        app.NewServer,    // last factory's return value becomes Build's first return
+    )
+}
+
+// wire is the user-defined marker. ligo-cli replaces Build's body in the
+// generated counterpart; this function is never invoked at runtime.
+func wire(_ ...any) error { return nil }
+```
+
+### Generate
+
+```bash
+ligo g wired                    # scans internal/wired/
+ligo g wired internal/bootstrap # scans a different package
+ligo g wired --dry-run          # preview without writing
+```
+
+The generator:
+
+1. Loads the package with the `wireinject` build tag active.
+2. Locates `Build` and the inner `wire(...)` call.
+3. Resolves each argument's function signature, builds a dependency graph keyed by Go types, and topologically sorts it. Cycles and missing providers fail at codegen time with a clear error.
+4. Emits `<pkg>/wired_gen.go` guarded by `//go:build !wireinject`. The body assigns each factory's result to a local variable, threads dependencies through the parameter list, and returns the last factory's value paired with `nil`.
+
+### Build modes
+
+```bash
+# Default: use the generated wiring
+go build ./...
+
+# Iteration: build against the wireinject stubs (forces the original Build body)
+go build -tags=wireinject ./...
+```
+
+Add `//go:generate ligo g wired` to a project file so `go generate ./...` keeps the wired file in sync.
+
+### Integration with `ligo serve` / `ligo work`
+
+`ligo serve` and `ligo work` auto-detect a wired package (default `internal/wired/`) and run the wired codegen before launching. In `--watch` mode the regen also runs on every restart so the generated wiring tracks edits to the injector.
+
+Disable with `--no-wired` (`-n`). Combine short flags: `ligo serve -nw` runs serve in watch mode with wired regen off.
+
+### Constraints (v0.10.x)
+
+- Marker function name is fixed: **`wire`**. Define it once as a stub returning `error`.
+- Each factory must return `T` or `(T, error)`.
+- Every parameter type must be satisfied by another factory in the list or by a named injector parameter.
+- The codegen does **not** import or reference `github.com/linkeunid/ligo`; it operates on whatever types the user's factories return. You decide whether the root value is `*ligo.App`, your own composition root, or any other type.

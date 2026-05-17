@@ -24,6 +24,7 @@ var workCmd = &cobra.Command{
 
 func init() {
 	workCmd.Flags().BoolVarP(&workWatchFlag, "watch", "w", false, "Restart on file changes")
+	workCmd.Flags().BoolVarP(&noWiredFlag, "no-wired", "n", false, "Skip auto-regeneration of wired_gen.go")
 	rootCmd.AddCommand(workCmd)
 }
 
@@ -41,6 +42,10 @@ func runWork(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(os.Stderr, "Error: runner %q not found\n\n", runnerName)
 		_ = listRunners()
 		return fmt.Errorf("runner %q not found", runnerName)
+	}
+
+	if err := regenerateWired(); err != nil {
+		return err
 	}
 
 	if workWatchFlag {
@@ -118,6 +123,9 @@ func runWorkWithWatcher(runnerName, runnerPath string) error {
 			clearScreen()
 			fmt.Printf("File changed — restarting runner: %s\n", runnerName)
 			killApp()
+			if err := regenerateWired(); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
 			startApp()
 		case err, ok := <-watcher.Errors:
 			if !ok {
