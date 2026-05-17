@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/config"
 	"{{.ModulePath}}/internal/infrastructure/http/middleware"
 	"{{.ModulePath}}/internal/usecase"
+
+	"github.com/linkeunid/ligo"
 )
 
 // FileController handles HTTP requests and route bindings for file operations.

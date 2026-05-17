@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"github.com/linkeunid/ligo"
 	infraauth "{{.ModulePath}}/internal/infrastructure/auth"
 	"{{.ModulePath}}/internal/infrastructure/http/middleware"
 	"{{.ModulePath}}/internal/infrastructure/http/presenter"
 	"{{.ModulePath}}/internal/usecase"
 	"{{.ModulePath}}/internal/usecase/dto"
+
+	"github.com/linkeunid/ligo"
 )
 
 // UserController handles HTTP requests and route bindings for user operations.

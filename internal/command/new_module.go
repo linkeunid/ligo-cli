@@ -10,9 +10,10 @@ import (
 	"text/template"
 
 	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
+
 	"github.com/linkeunid/ligo-cli/internal/schematic/ext"
 	"github.com/linkeunid/ligo-cli/internal/templateutil"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -91,7 +92,7 @@ func scaffoldExtensionModule(name, modulePath string) error {
 		"SnakeName":  names.Snake,
 	}
 
-	if err := os.MkdirAll(name, 0755); err != nil {
+	if err := os.MkdirAll(name, 0o755); err != nil {
 		return err
 	}
 
@@ -112,7 +113,7 @@ func scaffoldExtensionModule(name, modulePath string) error {
 		dest := filepath.Join(name, rel)
 
 		if d.IsDir() {
-			return os.MkdirAll(dest, 0755)
+			return os.MkdirAll(dest, 0o755)
 		}
 
 		content, err := ext.FS.ReadFile(path)

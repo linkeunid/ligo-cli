@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/infrastructure/http/middleware"
 	"{{.ModulePath}}/internal/usecase"
+
+	"github.com/linkeunid/ligo"
 )
 
 // HelloController handles HTTP requests for hello operations.

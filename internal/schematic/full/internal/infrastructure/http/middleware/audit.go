@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/domain/service"
+
+	"github.com/linkeunid/ligo"
 )
 
 // AuditMiddleware logs admin actions for security auditing.
@@ -14,7 +15,8 @@ func AuditMiddleware(log ligo.Logger) ligo.Middleware {
 			err := next(ctx)
 
 			if user != nil && user.IsAdmin() {
-				log.Info("Admin action performed",
+				log.Info(
+					"Admin action performed",
 					ligo.LoggerField{Key: "admin_id", Value: user.GetID()},
 					ligo.LoggerField{Key: "action", Value: ctx.Request().Method},
 					ligo.LoggerField{Key: "path", Value: ctx.Request().URL.Path},

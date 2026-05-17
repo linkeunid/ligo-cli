@@ -21,7 +21,7 @@ func RenderToFile(tmplStr, destPath string, data any, dryRun bool) error {
 		return fmt.Errorf("parse template: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {
 		return fmt.Errorf("create dirs: %w", err)
 	}
 
@@ -60,7 +60,7 @@ func PatchFile(path, marker, insertion string, dryRun bool) error {
 	}
 
 	patched := content[:idx] + insertion + content[idx:]
-	if err := os.WriteFile(path, []byte(patched), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(patched), 0o644); err != nil {
 		return fmt.Errorf("write %s: %w", path, err)
 	}
 

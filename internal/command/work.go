@@ -16,10 +16,10 @@ import (
 var workWatchFlag bool
 
 var workCmd = &cobra.Command{
-	Use:     "work <runner-name>",
-	Short:   "Run a background worker/runner",
-	Args:    cobra.MaximumNArgs(1),
-	RunE:    runWork,
+	Use:   "work <runner-name>",
+	Short: "Run a background worker/runner",
+	Args:  cobra.MaximumNArgs(1),
+	RunE:  runWork,
 }
 
 func init() {

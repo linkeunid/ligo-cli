@@ -3,10 +3,11 @@ package auth
 import (
 	"strings"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/service"
 	"{{.ModulePath}}/internal/usecase"
+
+	"github.com/linkeunid/ligo"
 )
 
 // JWTAuth implements domain.service.AuthService.

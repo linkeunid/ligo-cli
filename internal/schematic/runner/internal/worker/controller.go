@@ -5,8 +5,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/usecase"
+
+	"github.com/linkeunid/ligo"
 )
 
 type Controller struct {

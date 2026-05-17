@@ -9,10 +9,11 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/spf13/cobra"
+
 	"github.com/linkeunid/ligo-cli/internal/schematic/full"
 	"github.com/linkeunid/ligo-cli/internal/schematic/runner"
 	"github.com/linkeunid/ligo-cli/internal/schematic/simple"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -49,7 +50,7 @@ func runNew(cmd *cobra.Command, args []string) error {
 
 	data := map[string]string{"ModulePath": modulePath}
 
-	if err := os.MkdirAll(projectName, 0755); err != nil {
+	if err := os.MkdirAll(projectName, 0o755); err != nil {
 		return err
 	}
 
@@ -73,7 +74,7 @@ func runNew(cmd *cobra.Command, args []string) error {
 		dest := filepath.Join(projectName, rel)
 
 		if d.IsDir() {
-			return os.MkdirAll(dest, 0755)
+			return os.MkdirAll(dest, 0o755)
 		}
 
 		content, err := templateFS.ReadFile(path)
@@ -172,10 +173,10 @@ func dirExists(path string) bool {
 }
 
 func writeFile(dest string, content []byte) error {
-	if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
 		return err
 	}
-	if err := os.WriteFile(dest, content, 0644); err != nil {
+	if err := os.WriteFile(dest, content, 0o644); err != nil {
 		return err
 	}
 	fmt.Printf("  CREATE %s\n", dest)

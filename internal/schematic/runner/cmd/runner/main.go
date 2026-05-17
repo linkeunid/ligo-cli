@@ -3,9 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/config"
 	"{{.ModulePath}}/internal/module"
+
+	"github.com/linkeunid/ligo"
 )
 
 func main() {

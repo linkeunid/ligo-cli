@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/config"
+
+	"github.com/linkeunid/ligo"
 )
 
 // HealthController handles health check requests.

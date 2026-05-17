@@ -1,15 +1,17 @@
 package module
 
 import (
-	"github.com/linkeunid/ligo"
 	infraauth "{{.ModulePath}}/internal/infrastructure/auth"
+
+	"github.com/linkeunid/ligo"
 )
 
 // Auth returns the authentication module.
 // Exports *infraauth.JWTAuth as a singleton for injection into other modules.
 // This module does not use hooks - it's a simple provider example without lifecycle management.
 func AuthModule() ligo.Module {
-	return ligo.NewModule("auth",
+	return ligo.NewModule(
+		"auth",
 		ligo.Providers(
 			// ligo.Logger is auto-registered; JWTAuth receives it via DI
 			ligo.Export(ligo.Factory[*infraauth.JWTAuth](infraauth.NewJWTAuth)),

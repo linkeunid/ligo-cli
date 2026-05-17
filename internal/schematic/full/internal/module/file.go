@@ -1,19 +1,21 @@
 package module
 
 import (
-	"github.com/linkeunid/ligo"
-	ligomemory "github.com/linkeunid/ligo-memory"
 	"{{.ModulePath}}/internal/config"
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/repository"
 	"{{.ModulePath}}/internal/infrastructure/http/controller"
 	"{{.ModulePath}}/internal/infrastructure/persistence/memory"
 	"{{.ModulePath}}/internal/usecase"
+
+	"github.com/linkeunid/ligo"
+	ligomemory "github.com/linkeunid/ligo-memory"
 )
 
 // File returns the file upload module.
 func FileModule() ligo.Module {
-	return ligo.NewModule("file",
+	return ligo.NewModule(
+		"file",
 		ligo.Providers(
 			ligomemory.Provider[int, *entity.File](),
 			// Use HookedFactory for compile-time safe hook registration.

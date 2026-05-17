@@ -26,7 +26,8 @@ func (s *controllerSchematic) Run(ctx Context) error {
 		}
 	}
 
-	return templateutil.RenderToFile(tmpl,
+	return templateutil.RenderToFile(
+		tmpl,
 		filepath.Join(ctx.WorkDir, "internal", "infrastructure", "http", "controller",
 			fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,

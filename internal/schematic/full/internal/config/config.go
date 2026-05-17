@@ -2,11 +2,11 @@ package config
 
 // Config holds application configuration.
 type Config struct {
-	Version      string
-	ServerAddr   string
-	UploadDir    string
-	MaxFileSize  int64
-	JWTSecret    string
+	Version     string
+	ServerAddr  string
+	UploadDir   string
+	MaxFileSize int64
+	JWTSecret   string
 }
 
 // NewConfig creates a new configuration with defaults.

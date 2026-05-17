@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/linkeunid/ligo-cli/internal/project"
 	"github.com/linkeunid/ligo-cli/internal/schematic"
-	"github.com/spf13/cobra"
 )
 
-var withAuth bool
-var dryRun bool
-var fullSchematic bool
+var (
+	withAuth      bool
+	dryRun        bool
+	fullSchematic bool
+)
 
 var generateCmd = &cobra.Command{
 	Use:     "generate <schematic> [name]",

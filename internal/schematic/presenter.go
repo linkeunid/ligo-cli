@@ -18,7 +18,8 @@ func (s *presenterSchematic) Run(ctx Context) error {
 	d := makeData(ctx)
 	n := templateutil.NormalizeName(ctx.Name)
 
-	return templateutil.RenderToFile(presenterTmpl,
+	return templateutil.RenderToFile(
+		presenterTmpl,
 		filepath.Join(ctx.WorkDir, "internal", "infrastructure", "http", "presenter",
 			fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,

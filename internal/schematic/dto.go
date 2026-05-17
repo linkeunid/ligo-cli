@@ -19,14 +19,16 @@ func (s *dtoSchematic) Run(ctx Context) error {
 	n := templateutil.NormalizeName(ctx.Name)
 	dtoDir := filepath.Join(ctx.WorkDir, "internal", "usecase", "dto")
 
-	if err := templateutil.RenderToFile(dtoCreateTmpl,
+	if err := templateutil.RenderToFile(
+		dtoCreateTmpl,
 		filepath.Join(dtoDir, fmt.Sprintf("create_%s.go", n.Snake)),
 		d, ctx.DryRun,
 	); err != nil {
 		return err
 	}
 
-	return templateutil.RenderToFile(dtoUpdateTmpl,
+	return templateutil.RenderToFile(
+		dtoUpdateTmpl,
 		filepath.Join(dtoDir, fmt.Sprintf("update_%s.go", n.Snake)),
 		d, ctx.DryRun,
 	)

@@ -46,7 +46,7 @@ func TestPatchFile(t *testing.T) {
 	path := filepath.Join(dir, "main.go")
 
 	original := "func Main() {\n\t\tligo.Imports(\n\t\t\tAuth(),\n\t\t),\n\t}\n"
-	if err := os.WriteFile(path, []byte(original), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(original), 0o644); err != nil {
 		t.Fatal(err)
 	}
 

@@ -8,10 +8,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/linkeunid/ligo"
-	ligomemory "github.com/linkeunid/ligo-memory"
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/repository"
+
+	"github.com/linkeunid/ligo"
+	ligomemory "github.com/linkeunid/ligo-memory"
 )
 
 // FileRepository is an in-memory implementation of repository.FileRepository.
@@ -24,7 +25,7 @@ type FileRepository struct {
 
 // NewFileRepository creates a new in-memory file repository.
 func NewFileRepository(dir string, store *ligomemory.Store[int, *entity.File], log ligo.Logger) repository.FileRepository {
-	os.MkdirAll(dir, 0755)
+	os.MkdirAll(dir, 0o755)
 	return &FileRepository{store: store, dir: dir, log: log}
 }
 
@@ -32,7 +33,7 @@ func NewFileRepository(dir string, store *ligomemory.Store[int, *entity.File], l
 // This method is registered as a lifecycle hook via Register().
 func (r *FileRepository) EnsureUploadDir() error {
 	r.log.Info("Ensuring upload directory exists", ligo.LoggerField{Key: "dir", Value: r.dir})
-	return os.MkdirAll(r.dir, 0755)
+	return os.MkdirAll(r.dir, 0o755)
 }
 
 // Register implements ligo.Registerable interface for compile-time safe hook registration.
@@ -49,7 +50,7 @@ func (r *FileRepository) Save(file io.Reader, filename string) (*entity.File, er
 	id := nextID()
 	path := filepath.Join(r.dir, fmt.Sprintf("%d_%s", id, filename))
 
-	if err := os.WriteFile(path, content, 0644); err != nil {
+	if err := os.WriteFile(path, content, 0o644); err != nil {
 		return nil, err
 	}
 

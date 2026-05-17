@@ -3,9 +3,10 @@ package auth
 import (
 	"strings"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/domain/service"
 	"{{.ModulePath}}/internal/usecase"
+
+	"github.com/linkeunid/ligo"
 )
 
 // AuthGuard creates an authentication guard that validates bearer tokens.

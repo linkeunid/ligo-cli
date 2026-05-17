@@ -19,14 +19,16 @@ func (s *entitySchematic) Run(ctx Context) error {
 	n := templateutil.NormalizeName(ctx.Name)
 	base := ctx.WorkDir
 
-	if err := templateutil.RenderToFile(entityTmpl,
+	if err := templateutil.RenderToFile(
+		entityTmpl,
 		filepath.Join(base, "internal", "domain", "entity", fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,
 	); err != nil {
 		return err
 	}
 
-	return templateutil.RenderToFile(repositoryTmpl,
+	return templateutil.RenderToFile(
+		repositoryTmpl,
 		filepath.Join(base, "internal", "domain", "repository", fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,
 	)

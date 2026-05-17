@@ -3,10 +3,11 @@ package main
 import (
 	"net/http"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/config"
 	"{{.ModulePath}}/internal/infrastructure/http/middleware"
 	"{{.ModulePath}}/internal/module"
+
+	"github.com/linkeunid/ligo"
 	"github.com/linkeunid/ligo/adapters/echo"
 )
 

@@ -1,10 +1,11 @@
 package memory
 
 import (
-	"github.com/linkeunid/ligo"
-	ligomemory "github.com/linkeunid/ligo-memory"
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/repository"
+
+	"github.com/linkeunid/ligo"
+	ligomemory "github.com/linkeunid/ligo-memory"
 )
 
 // UserRepository is an in-memory implementation of repository.UserRepository

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
+
 	"github.com/linkeunid/ligo-cli/internal/templateutil"
 )
 
@@ -24,7 +25,8 @@ func (s *moduleSchematic) Run(ctx Context) error {
 		tmpl = moduleTmpl
 	}
 
-	if err := templateutil.RenderToFile(tmpl,
+	if err := templateutil.RenderToFile(
+		tmpl,
 		filepath.Join(ctx.WorkDir, "internal", "module", fmt.Sprintf("%s.go", n.Snake)),
 		d, ctx.DryRun,
 	); err != nil {

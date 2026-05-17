@@ -3,9 +3,10 @@ package usecase
 import (
 	"io"
 
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/domain/entity"
 	"{{.ModulePath}}/internal/domain/repository"
+
+	"github.com/linkeunid/ligo"
 )
 
 // FileUseCase contains business logic for file operations.
@@ -29,7 +30,8 @@ func (uc *FileUseCase) UploadFile(file io.Reader, filename string) (*entity.File
 		return nil, err
 	}
 
-	uc.log.Info("File uploaded",
+	uc.log.Info(
+		"File uploaded",
 		ligo.LoggerField{Key: "file_id", Value: savedFile.ID},
 		ligo.LoggerField{Key: "filename", Value: filename},
 		ligo.LoggerField{Key: "size", Value: savedFile.Size},
@@ -62,7 +64,8 @@ func (uc *FileUseCase) DeleteFile(id int) error {
 		return err
 	}
 
-	uc.log.Info("File deleted",
+	uc.log.Info(
+		"File deleted",
 		ligo.LoggerField{Key: "file_id", Value: id},
 	)
 	return nil

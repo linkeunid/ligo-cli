@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/linkeunid/ligo"
 	"{{.ModulePath}}/internal/config"
+
+	"github.com/linkeunid/ligo"
 )
 
 // RootController handles root API info requests.
@@ -46,11 +47,11 @@ func (c *RootController) Info(ctx ligo.Context) error {
 			"DELETE /files/:id":    "Delete file",
 		},
 		"examples": map[string]string{
-			"list_users":   `curl http://localhost:8080/users`,
-			"get_user":     `curl -H "Authorization: Bearer user:secret" http://localhost:8080/users/<id>`,
-			"create_user":  `curl -X POST -H "Authorization: Bearer user:secret" -H "Content-Type: application/json" -d '{"name":"Alice","email":"alice@example.com"}' http://localhost:8080/users`,
-			"update_user":  `curl -X PUT -H "Authorization: Bearer user:secret" -H "Content-Type: application/json" -d '{"name":"Alice Updated"}' http://localhost:8080/users/<id>`,
-			"delete_user":  `curl -X DELETE -H "Authorization: Bearer admin:secret" http://localhost:8080/users/<id>`,
+			"list_users":  `curl http://localhost:8080/users`,
+			"get_user":    `curl -H "Authorization: Bearer user:secret" http://localhost:8080/users/<id>`,
+			"create_user": `curl -X POST -H "Authorization: Bearer user:secret" -H "Content-Type: application/json" -d '{"name":"Alice","email":"alice@example.com"}' http://localhost:8080/users`,
+			"update_user": `curl -X PUT -H "Authorization: Bearer user:secret" -H "Content-Type: application/json" -d '{"name":"Alice Updated"}' http://localhost:8080/users/<id>`,
+			"delete_user": `curl -X DELETE -H "Authorization: Bearer admin:secret" http://localhost:8080/users/<id>`,
 		},
 	})
 }
