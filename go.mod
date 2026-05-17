@@ -5,7 +5,7 @@ go 1.25.9
 require (
 	github.com/charmbracelet/huh v1.0.0
 	github.com/fsnotify/fsnotify v1.10.0
-	github.com/linkeunid/ligo v0.8.0
+	github.com/linkeunid/ligo v0.9.0
 	github.com/spf13/cobra v1.10.2
 )
 
