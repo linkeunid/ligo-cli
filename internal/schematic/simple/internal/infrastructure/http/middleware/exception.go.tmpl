@@ -19,7 +19,7 @@ type fieldErr struct {
 // ExceptionMiddleware handles errors and converts them to HTTP responses.
 func ExceptionMiddleware(log ligo.Logger) ligo.Middleware {
 	return func(next ligo.HandlerFunc) ligo.HandlerFunc {
-		return func(ctx ligo.Context) error {
+		return func(ctx *ligo.Context) error {
 			err := next(ctx)
 			if err == nil {
 				return nil

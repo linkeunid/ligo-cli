@@ -13,7 +13,7 @@ import (
 // LoggingMiddleware logs request details.
 func LoggingMiddleware(log ligo.Logger) ligo.Middleware {
 	return func(next ligo.HandlerFunc) ligo.HandlerFunc {
-		return func(ctx ligo.Context) error {
+		return func(ctx *ligo.Context) error {
 			start := time.Now()
 
 			log.Debug(

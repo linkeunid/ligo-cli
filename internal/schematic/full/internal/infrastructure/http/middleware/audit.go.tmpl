@@ -9,7 +9,7 @@ import (
 // AuditMiddleware logs admin actions for security auditing.
 func AuditMiddleware(log ligo.Logger) ligo.Middleware {
 	return func(next ligo.HandlerFunc) ligo.HandlerFunc {
-		return func(ctx ligo.Context) error {
+		return func(ctx *ligo.Context) error {
 			user, _ := ctx.Get(service.ContextKeyUser).(service.User)
 
 			err := next(ctx)

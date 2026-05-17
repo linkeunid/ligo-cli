@@ -11,7 +11,7 @@ import (
 
 // AuthGuard creates an authentication guard that validates bearer tokens.
 func AuthGuard(authService service.AuthService) ligo.Guard {
-	return func(ctx ligo.Context) (bool, error) {
+	return func(ctx *ligo.Context) (bool, error) {
 		authHeader := ctx.Request().Header.Get("Authorization")
 		if authHeader == "" {
 			return false, usecase.ErrUnauthorized
@@ -35,7 +35,7 @@ func AuthGuard(authService service.AuthService) ligo.Guard {
 
 // AdminGuard creates an admin-only authorization guard.
 func AdminGuard() ligo.Guard {
-	return func(ctx ligo.Context) (bool, error) {
+	return func(ctx *ligo.Context) (bool, error) {
 		user, ok := ctx.Get(service.ContextKeyUser).(service.User)
 		if !ok || user == nil {
 			return false, usecase.ErrUnauthorized

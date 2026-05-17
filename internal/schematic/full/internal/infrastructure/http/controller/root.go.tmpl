@@ -23,7 +23,7 @@ func (c *RootController) Routes(r ligo.Router) {
 }
 
 // Info handles GET /
-func (c *RootController) Info(ctx ligo.Context) error {
+func (c *RootController) Info(ctx *ligo.Context) error {
 	c.log.Info("API info requested")
 	return ctx.JSON(200, map[string]any{
 		"name":        "Ligo Boilerplate",

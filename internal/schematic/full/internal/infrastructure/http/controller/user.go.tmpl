@@ -99,13 +99,13 @@ func (c *UserController) Routes(r ligo.Router) {
 }
 
 // GetAllUsers handles GET /users
-func (c *UserController) GetAllUsers(ctx ligo.Context) error {
+func (c *UserController) GetAllUsers(ctx *ligo.Context) error {
 	users := c.userUseCase.GetAllUsers()
 	return ctx.OK(c.presenter.ToListResponse(users))
 }
 
 // GetUserByID handles GET /users/:id
-func (c *UserController) GetUserByID(ctx ligo.Context) error {
+func (c *UserController) GetUserByID(ctx *ligo.Context) error {
 	id := ligo.Get[int](ctx, "id")
 	user, err := c.userUseCase.GetUserByID(id)
 	if err != nil {
@@ -115,7 +115,7 @@ func (c *UserController) GetUserByID(ctx ligo.Context) error {
 }
 
 // CreateUser handles POST /users
-func (c *UserController) CreateUser(ctx ligo.Context) error {
+func (c *UserController) CreateUser(ctx *ligo.Context) error {
 	input := ligo.ValidatedBody[dto.CreateUserInput](ctx)
 	user, err := c.userUseCase.CreateUser(*input)
 	if err != nil {
@@ -125,7 +125,7 @@ func (c *UserController) CreateUser(ctx ligo.Context) error {
 }
 
 // UpdateUser handles PUT /users/:id
-func (c *UserController) UpdateUser(ctx ligo.Context) error {
+func (c *UserController) UpdateUser(ctx *ligo.Context) error {
 	id := ligo.Get[int](ctx, "id")
 	input := ligo.ValidatedBody[dto.UpdateUserInput](ctx)
 	user, err := c.userUseCase.UpdateUser(id, *input)
@@ -136,7 +136,7 @@ func (c *UserController) UpdateUser(ctx ligo.Context) error {
 }
 
 // DeleteUser handles DELETE /users/:id
-func (c *UserController) DeleteUser(ctx ligo.Context) error {
+func (c *UserController) DeleteUser(ctx *ligo.Context) error {
 	id := ligo.Get[int](ctx, "id")
 	if err := c.userUseCase.DeleteUser(id); err != nil {
 		return err

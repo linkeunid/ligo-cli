@@ -33,6 +33,6 @@ func (c *HelloController) Routes(r ligo.Router) {
 	cr.GET("", c.Hello).Handle()
 }
 
-func (c *HelloController) Hello(ctx ligo.Context) error {
+func (c *HelloController) Hello(ctx *ligo.Context) error {
 	return ctx.OK(c.uc.Hello())
 }

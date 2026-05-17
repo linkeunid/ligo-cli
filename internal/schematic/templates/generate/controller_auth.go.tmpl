@@ -43,12 +43,12 @@ func (c *{{.Pascal}}Controller) Routes(r ligo.Router) {
 	cr.DELETE("/:id", c.Delete{{.Pascal}}).Guard(c.authGuard).Pipe(ligo.ParseIntPipe("id")).Handle()
 }
 
-func (c *{{.Pascal}}Controller) GetAll{{.Pascal}}s(ctx ligo.Context) error {
+func (c *{{.Pascal}}Controller) GetAll{{.Pascal}}s(ctx *ligo.Context) error {
 	items := c.uc.GetAll{{.Pascal}}s()
 	return ctx.OK(c.presenter.ToListResponse(items))
 }
 
-func (c *{{.Pascal}}Controller) Get{{.Pascal}}ByID(ctx ligo.Context) error {
+func (c *{{.Pascal}}Controller) Get{{.Pascal}}ByID(ctx *ligo.Context) error {
 	id := ligo.Get[int](ctx, "id")
 	item, err := c.uc.Get{{.Pascal}}ByID(id)
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *{{.Pascal}}Controller) Get{{.Pascal}}ByID(ctx ligo.Context) error {
 	return ctx.OK(c.presenter.ToResponse(item))
 }
 
-func (c *{{.Pascal}}Controller) Create{{.Pascal}}(ctx ligo.Context) error {
+func (c *{{.Pascal}}Controller) Create{{.Pascal}}(ctx *ligo.Context) error {
 	input := ligo.ValidatedBody[dto.Create{{.Pascal}}Input](ctx)
 	item, err := c.uc.Create{{.Pascal}}(*input)
 	if err != nil {
@@ -66,7 +66,7 @@ func (c *{{.Pascal}}Controller) Create{{.Pascal}}(ctx ligo.Context) error {
 	return ctx.Created(c.presenter.ToResponse(item))
 }
 
-func (c *{{.Pascal}}Controller) Update{{.Pascal}}(ctx ligo.Context) error {
+func (c *{{.Pascal}}Controller) Update{{.Pascal}}(ctx *ligo.Context) error {
 	id := ligo.Get[int](ctx, "id")
 	input := ligo.ValidatedBody[dto.Update{{.Pascal}}Input](ctx)
 	item, err := c.uc.Update{{.Pascal}}(id, *input)
@@ -76,7 +76,7 @@ func (c *{{.Pascal}}Controller) Update{{.Pascal}}(ctx ligo.Context) error {
 	return ctx.OK(c.presenter.ToResponse(item))
 }
 
-func (c *{{.Pascal}}Controller) Delete{{.Pascal}}(ctx ligo.Context) error {
+func (c *{{.Pascal}}Controller) Delete{{.Pascal}}(ctx *ligo.Context) error {
 	id := ligo.Get[int](ctx, "id")
 	if err := c.uc.Delete{{.Pascal}}(id); err != nil {
 		return err

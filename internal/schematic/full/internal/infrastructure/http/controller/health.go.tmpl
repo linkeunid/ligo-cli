@@ -22,7 +22,7 @@ func (c *HealthController) Routes(r ligo.Router) {
 }
 
 // Check handles GET /health
-func (c *HealthController) Check(ctx ligo.Context) error {
+func (c *HealthController) Check(ctx *ligo.Context) error {
 	return ctx.JSON(200, map[string]string{
 		"status":  "ok",
 		"version": c.cfg.Version,

@@ -32,6 +32,6 @@ func (c *{{.Pascal}}Controller) Routes(r ligo.Router) {
 	cr.GET("", c.Hello).Handle()
 }
 
-func (c *{{.Pascal}}Controller) Hello(ctx ligo.Context) error {
+func (c *{{.Pascal}}Controller) Hello(ctx *ligo.Context) error {
 	return ctx.OK(c.uc.Hello())
 }
