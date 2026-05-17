@@ -48,6 +48,10 @@ type Spec struct {
 	Injector  InjectorSpec
 	Providers []ProviderSpec
 	Imports   []ImportSpec
+	// RootVar is the local variable name in the emitted body whose value
+	// should be returned as the injector's primary result. Empty when the
+	// injector returns only error (or no results).
+	RootVar string
 }
 
 // InjectorSpec is the function the generator replaces.

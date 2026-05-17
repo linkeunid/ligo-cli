@@ -94,13 +94,20 @@ func Load(opts LoadOptions) (*Spec, error) {
 		return nil, err
 	}
 
+	rootType := primaryResultType(injector.Results)
+	pruned, rootVar, err := pruneToRoot(ordered, rootType)
+	if err != nil {
+		return nil, err
+	}
+
 	spec := &Spec{
 		PkgPath:   pkg.PkgPath,
 		PkgName:   pkg.Name,
 		OutFile:   filepath.Join(packageDir(pkg), opts.OutFile),
 		Injector:  injector,
-		Providers: ordered,
+		Providers: pruned,
 		Imports:   sortedImports(imports, pkg.PkgPath),
+		RootVar:   rootVar,
 	}
 	if err := spec.Validate(); err != nil {
 		return nil, err
@@ -206,6 +213,9 @@ func extractMarkerArgs(fn *ast.FuncDecl, marker string) ([]ast.Expr, error) {
 func buildProviders(pkg *packages.Package, args []ast.Expr, imports map[string]string) ([]ProviderSpec, error) {
 	out := make([]ProviderSpec, 0, len(args))
 	for _, arg := range args {
+		if err := rejectWireinjectFactory(pkg, arg); err != nil {
+			return nil, err
+		}
 		tv, ok := pkg.TypesInfo.Types[arg]
 		if !ok {
 			return nil, fmt.Errorf("wired: cannot type-check factory %s", exprText(arg))
@@ -372,6 +382,105 @@ func sanitizeIdent(s string) string {
 		return s + "_"
 	}
 	return s
+}
+
+// rejectWireinjectFactory errors out when a factory argument references a
+// function declared inside a //go:build wireinject file. Those functions
+// vanish when the generated file is built (it carries //go:build
+// !wireinject), so the wired_gen.go would fail to compile. The user must
+// move the factory to a normal file.
+func rejectWireinjectFactory(pkg *packages.Package, expr ast.Expr) error {
+	var ident *ast.Ident
+	switch e := expr.(type) {
+	case *ast.Ident:
+		ident = e
+	case *ast.SelectorExpr:
+		// Cross-package references can't sit in this package's wireinject
+		// file, so no need to check them.
+		return nil
+	default:
+		return nil
+	}
+	obj := pkg.TypesInfo.ObjectOf(ident)
+	if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != pkg.PkgPath {
+		return nil
+	}
+	declFile := pkg.Fset.File(obj.Pos())
+	if declFile == nil {
+		return nil
+	}
+	for _, file := range pkg.Syntax {
+		if pkg.Fset.File(file.Pos()) != declFile {
+			continue
+		}
+		if hasWireinjectTag(file) {
+			return fmt.Errorf("wired: factory %s is declared in a //go:build wireinject file (%s); move it to a regular .go file so the generated wired_gen.go can call it",
+				ident.Name, declFile.Name())
+		}
+		return nil
+	}
+	return nil
+}
+
+// primaryResultType returns the first non-error result type, or "" when the
+// injector returns nothing but an error (or nothing at all).
+func primaryResultType(results []ParamSpec) string {
+	for _, r := range results {
+		if r.Type != "error" {
+			return r.Type
+		}
+	}
+	return ""
+}
+
+// pruneToRoot keeps providers in topo order that are reachable from the
+// provider matching rootType (including transitively via dep vars). Returns
+// the pruned list and the matching provider's VarName.
+//
+// When rootType is empty the original list is returned untouched and RootVar
+// is left blank — emit then omits the trailing `return X` value.
+func pruneToRoot(ordered []ProviderSpec, rootType string) ([]ProviderSpec, string, error) {
+	if rootType == "" {
+		return ordered, "", nil
+	}
+	rootIdx := -1
+	for i, p := range ordered {
+		if p.ReturnType == rootType {
+			rootIdx = i
+			break
+		}
+	}
+	if rootIdx < 0 {
+		return nil, "", fmt.Errorf("wired: no provider produces injector return type %q", rootType)
+	}
+
+	varToIdx := make(map[string]int, len(ordered))
+	for i, p := range ordered {
+		varToIdx[p.VarName] = i
+	}
+
+	needed := make(map[int]struct{}, len(ordered))
+	var visit func(i int)
+	visit = func(i int) {
+		if _, seen := needed[i]; seen {
+			return
+		}
+		needed[i] = struct{}{}
+		for _, depVar := range ordered[i].DepVars {
+			if j, ok := varToIdx[depVar]; ok {
+				visit(j)
+			}
+		}
+	}
+	visit(rootIdx)
+
+	out := make([]ProviderSpec, 0, len(needed))
+	for i, p := range ordered {
+		if _, ok := needed[i]; ok {
+			out = append(out, p)
+		}
+	}
+	return out, ordered[rootIdx].VarName, nil
 }
 
 func sortedImports(m map[string]string, selfPath string) []ImportSpec {

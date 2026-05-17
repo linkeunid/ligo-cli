@@ -19,10 +19,14 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	buildCmd.Flags().StringVar(&buildOut, "out", "bin/app", "Output binary path")
+	buildCmd.Flags().BoolVarP(&noWiredFlag, "no-wired", "n", false, "Skip auto-regeneration of wired_gen.go")
 	rootCmd.AddCommand(buildCmd)
 }
 
 func runBuild(cmd *cobra.Command, args []string) error {
+	if err := regenerateWired(); err != nil {
+		return err
+	}
 	c := exec.Command("go", "build", "-o", buildOut, "./cmd/api/")
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr

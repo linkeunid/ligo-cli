@@ -95,6 +95,105 @@ func Build() (*app.Server, error) {
 }
 ```
 
+## Consuming the generated file
+
+`wired_gen.go` IS your composition root. It's a plain `Build(...)`
+function that returns the root value plus an `error`. Nothing happens
+until your `main.go` (or a bootstrap function) calls it.
+
+### Pattern A — replace module wiring entirely
+
+Make `NewApp(deps...) *ligo.App` your last factory. The generated
+function returns `*ligo.App`; `main.go` just runs it.
+
+```go
+// internal/wired/providers.go
+func NewApp(svc *Service, log ligo.Logger) *ligo.App {
+    app := ligo.New(ligo.WithLogger(log))
+    app.Provide(ligo.Value(svc))
+    return app
+}
+
+// internal/wired/inject.go
+//go:build wireinject
+package wired
+
+func Build(log ligo.Logger) (*ligo.App, error) {
+    return nil, wire(
+        usecase.NewHelloUseCase,
+        controller.NewHelloController,
+        NewService,
+        NewApp,
+    )
+}
+func wire(_ ...any) error { return nil }
+
+// cmd/api/main.go
+func main() {
+    log := ligo.NewLogger()
+    app, err := wired.Build(log)
+    if err != nil {
+        log.Fatal(err)
+    }
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+This is the "go all in" path — no reflection-based module discovery,
+the full graph is visible in `wired_gen.go`.
+
+### Pattern B — wire one subgraph, keep modules elsewhere
+
+Use codegen for a performance-critical entry point (a background
+worker, a CLI command) and let the standard Ligo module tree handle
+HTTP/controllers.
+
+```go
+// cmd/worker/main.go
+worker, err := wired.Build(logger)
+if err != nil { log.Fatal(err) }
+go worker.Start()
+
+// cmd/api/main.go — unchanged, still uses module DI
+app := ligo.New()
+app.Register(httpModule.Module())
+app.Run()
+```
+
+### Pattern C — return a custom composition struct
+
+Nothing forces you to return `*ligo.App`. The generator returns
+whatever the last factory in your dependency chain produces, so you
+can wire bespoke service containers, test harnesses, or anything else
+that benefits from a typed wiring graph.
+
+```go
+type Services struct {
+    HTTP    *HTTPServer
+    Worker  *Worker
+    Metrics *MetricsExporter
+}
+
+func NewServices(h *HTTPServer, w *Worker, m *MetricsExporter) *Services {
+    return &Services{HTTP: h, Worker: w, Metrics: m}
+}
+
+func Build(cfg *Config) (*Services, error) { ... }
+```
+
+### What it is not
+
+- Not a replacement for Ligo controllers, middleware, or
+  request-scoped DI. Those stay in modules.
+- Not magic — `ligo g wired` only sees factories you list in
+  `wire(...)`. Nothing is auto-discovered.
+- Not invoked at runtime — once `wired_gen.go` exists, the runtime
+  cost is zero (plain function calls). `wire(...)` itself runs only
+  under the `wireinject` build tag and is never reached in normal
+  builds.
+
 ## Build modes
 
 ```bash
@@ -111,12 +210,14 @@ Add `//go:generate ligo g wired` to a project file so
 `go generate ./...` keeps the wired file in sync as part of normal
 codegen.
 
-## Integration with `ligo serve` / `ligo work`
+## Integration with `ligo build` / `serve` / `work`
 
-`ligo serve` and `ligo work` auto-detect a wired package (default
-`internal/wired/`) and regenerate `wired_gen.go` before launching. In
-`--watch` mode the regen also runs on every restart, so the generated
-wiring tracks edits to the injector without a manual `ligo g wired`.
+`ligo build`, `ligo serve`, and `ligo work` auto-detect a wired
+package (default `internal/wired/`) and regenerate `wired_gen.go`
+before launching the underlying `go build` / `go run`. In `serve --watch`
+and `work --watch` modes the regen also runs on every restart, so the
+generated wiring tracks edits to the injector without a manual
+`ligo g wired`.
 
 Opt out per-invocation:
 
@@ -126,6 +227,189 @@ Opt out per-invocation:
 | `-n` | Short form |
 | `-nw` | Combined: watch on (`-w`), regen off (`-n`) |
 
+For CI builds that should fail loudly on stale wiring, run
+`ligo g wired --dry-run` first or commit `wired_gen.go` and use plain
+`go build` so the codegen step is excluded from the build path.
+
+## Worked examples
+
+The following scenarios were exercised against a fresh `ligo new` scaffold.
+
+### 1 — Minimal two-factory chain
+
+Injector:
+
+```go
+//go:build wireinject
+package wired
+
+import (
+    "github.com/linkeunid/ligo"
+
+    "github.com/example/app/internal/infrastructure/http/controller"
+    "github.com/example/app/internal/usecase"
+)
+
+func Build(log ligo.Logger) (*controller.HelloController, error) {
+    return nil, wire(
+        usecase.NewHelloUseCase,
+        controller.NewHelloController,
+    )
+}
+
+func wire(_ ...any) error { return nil }
+```
+
+Generated:
+
+```go
+func Build(log ligo.Logger) (*controller.HelloController, error) {
+    helloUseCase := usecase.NewHelloUseCase()
+    helloController := controller.NewHelloController(helloUseCase, log)
+    return helloController, nil
+}
+```
+
+### 2 — Out-of-order arguments
+
+The order of factory arguments does not matter — the codegen
+topo-sorts:
+
+```go
+return nil, wire(
+    controller.NewHelloController,   // depends on HelloUseCase
+    usecase.NewHelloUseCase,         // listed second but constructed first
+)
+```
+
+Produces the same output as scenario 1: `helloUseCase := …` then
+`helloController := …`.
+
+### 3 — `(T, error)` factory threaded mid-chain
+
+```go
+func NewDatabase(log ligo.Logger) (*Database, error) {
+    if log == nil { return nil, errors.New("logger required") }
+    return &Database{DSN: ":memory:"}, nil
+}
+
+type SeededService struct {
+    UC *usecase.HelloUseCase
+    DB *Database
+}
+func NewSeededService(uc *usecase.HelloUseCase, db *Database) *SeededService {
+    return &SeededService{UC: uc, DB: db}
+}
+
+func Build(log ligo.Logger) (*SeededService, error) {
+    return nil, wire(
+        usecase.NewHelloUseCase,
+        NewDatabase,
+        NewSeededService,
+    )
+}
+```
+
+Generated body — note the `if err != nil` block before downstream
+factories run:
+
+```go
+func Build(log ligo.Logger) (*SeededService, error) {
+    helloUseCase := usecase.NewHelloUseCase()
+    database, err := NewDatabase(log)
+    if err != nil {
+        return nil, err
+    }
+    seededService := NewSeededService(helloUseCase, database)
+    return seededService, nil
+}
+```
+
+### 4 — Pruning an unreachable factory
+
+If you list a factory whose output isn't transitively needed by the
+root, codegen drops it (otherwise the generated file would fail with
+`declared and not used`):
+
+```go
+func Build(log ligo.Logger) (*controller.HelloController, error) {
+    return nil, wire(
+        usecase.NewHelloUseCase,
+        controller.NewHelloController,
+        NewDatabase,   // *Database is not reachable from *HelloController
+    )
+}
+```
+
+Generated body — `NewDatabase` is silently pruned:
+
+```go
+func Build(log ligo.Logger) (*controller.HelloController, error) {
+    helloUseCase := usecase.NewHelloUseCase()
+    helloController := controller.NewHelloController(helloUseCase, log)
+    return helloController, nil
+}
+```
+
+### 5 — Factory declared inside the wireinject file (error case)
+
+```go
+//go:build wireinject
+package wired
+
+func NewDatabase() *Database { return &Database{} } // wrong place
+
+func Build() (*Database, error) {
+    return nil, wire(NewDatabase)
+}
+```
+
+`ligo g wired` rejects this with:
+
+```
+wired: factory NewDatabase is declared in a //go:build wireinject file
+(/path/internal/wired/inject.go); move it to a regular .go file so the
+generated wired_gen.go can call it
+```
+
+Fix: move `NewDatabase` to `internal/wired/providers.go` (no build
+tag).
+
+## File layout
+
+Keep factories outside the `wireinject`-tagged file. The injector file
+disappears from normal builds (because it carries `//go:build
+wireinject`); factories declared inside it would be unreachable from
+the generated `wired_gen.go`. The codegen detects this and refuses to
+generate, telling you which factory to relocate.
+
+A typical layout:
+
+```
+internal/wired/
+├── inject.go         //go:build wireinject — only Build() and wire() stub
+├── providers.go      regular file — local factories (NewDatabase, etc.)
+└── wired_gen.go      generated — //go:build !wireinject
+```
+
+Factories declared in your application packages
+(`internal/usecase`, `internal/infrastructure/...`) work
+out-of-the-box.
+
+## Root selection and pruning
+
+The injector's first non-`error` result type is the **root**: codegen
+finds the factory whose return type matches and threads its
+constructor chain. Any factory listed in `wire(...)` whose output
+isn't transitively needed by the root is **pruned** from the
+generated file — keeping it would compile-error as
+`declared and not used`.
+
+If you want a factory to run for side effects but its result is
+unreachable, either return its value from a downstream factory that
+the root depends on, or split it into a separate
+non-codegen-managed initialiser.
+
 ## Constraints (v0.11.x)
 
 - Marker function name is fixed: **`wire`**. Define it once as a stub
@@ -133,6 +417,8 @@ Opt out per-invocation:
 - Each factory must return `T` or `(T, error)`.
 - Every parameter type must be satisfied by another factory in the
   list or by a named injector parameter.
+- Factories must be declared outside the `wireinject` file (see "File
+  layout" above).
 - The codegen does **not** import or reference
   `github.com/linkeunid/ligo`. It operates on whatever types the
   factories return. You decide whether the root value is `*ligo.App`,

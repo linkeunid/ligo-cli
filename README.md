@@ -191,8 +191,9 @@ Equivalent to `go run cmd/runner/<name>/main.go`. `--watch` (`-w`) watches `cmd/
 ## `ligo build`
 
 ```bash
-ligo build             # go build -o bin/app ./cmd/api/
+ligo build              # regen wired_gen.go then go build -o bin/app ./cmd/api/
 ligo build --out dist/server
+ligo build -n           # skip wired auto-regen
 ```
 
 ## Wired codegen

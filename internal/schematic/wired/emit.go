@@ -41,6 +41,7 @@ type templateData struct {
 	HasErrors  bool
 	RootVar    string
 	NeedsError bool
+	HasRoot    bool
 }
 
 type renderedProvider struct {
@@ -50,18 +51,16 @@ type renderedProvider struct {
 }
 
 func newTemplateData(spec *Spec) (templateData, error) {
+	if len(spec.Providers) == 0 {
+		return templateData{}, fmt.Errorf("wired: spec has no providers")
+	}
 	providers := make([]renderedProvider, 0, len(spec.Providers))
-	rootIdx := -1
-	for i, p := range spec.Providers {
+	for _, p := range spec.Providers {
 		providers = append(providers, renderedProvider{
 			VarName:      p.VarName,
 			Call:         fmt.Sprintf("%s(%s)", p.FuncRef, strings.Join(p.DepVars, ", ")),
 			ReturnsError: p.ReturnsError,
 		})
-		rootIdx = i
-	}
-	if rootIdx < 0 {
-		return templateData{}, fmt.Errorf("wired: spec has no providers")
 	}
 
 	needsError := false
@@ -72,13 +71,22 @@ func newTemplateData(spec *Spec) (templateData, error) {
 		}
 	}
 
+	rootVar := spec.RootVar
+	if rootVar == "" {
+		// No primary return type — fall back to the last provider so a
+		// pure side-effects injector still compiles. The trailing return
+		// uses _ = rootVar to silence the unused-variable warning.
+		rootVar = providers[len(providers)-1].VarName
+	}
+
 	return templateData{
 		PkgName:    spec.PkgName,
 		Imports:    spec.Imports,
 		Injector:   spec.Injector,
 		Providers:  providers,
-		RootVar:    providers[rootIdx].VarName,
+		RootVar:    rootVar,
 		NeedsError: needsError,
+		HasRoot:    spec.RootVar != "",
 	}, nil
 }
 
@@ -147,7 +155,12 @@ func {{ .Injector.Name }}({{ params .Injector.Params }}) {{ results .Injector.Re
 	{{ .VarName }} := {{ .Call }}
 {{- end }}
 {{- end }}
+{{- if .HasRoot }}
 	return {{ .RootVar }}{{ if .NeedsError }}, nil{{ end }}
+{{- else }}
+	_ = {{ .RootVar }}
+	return{{ if .NeedsError }} nil{{ end }}
+{{- end }}
 }
 `))
 
