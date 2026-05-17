@@ -82,6 +82,10 @@ go mod tidy                             # Tidy deps
 - **Validate at the edge.** Use `ligo.ValidationPipe(&Dto{})` on the route
   and `ligo.ValidatedBody[Dto](ctx)` in the handler. The use case can
   then trust its input.
+- **Resolve dependencies with `ligo.MustResolve[T](app)` only after
+  `app.Run()`.** Prefer `ligo.Resolve[T]` (returns `(T, error)`) when
+  the failure is recoverable; reserve `MustResolve` for cases where a
+  missing provider really should crash the process.
 - **Pagination in the framework.** `ctx.Paginate(20, 100)` and
   `ctx.Paginated(items, page, perPage, total)` — don't roll your own.
 - **Query binding in the framework.** `ctx.BindQuery(&filter)` with
@@ -94,6 +98,10 @@ go mod tidy                             # Tidy deps
 - **Don't depend on resolution order between providers in the same
   module.** OnInit hooks run after construction; do cross-provider setup
   there, not in factories.
+  As of ligo v0.10.0 these hooks run sequentially in registration
+  order — opt back into the legacy parallel execution with
+  `ligo.WithParallelHooks()` only if you have many independent I/O-bound
+  providers and ordering does not matter.
 - **Don't put `Handle[T,R](...)` / `On[T](...)` calls in a factory body.**
   They mutate broker state and need the broker to be connected — do them
   in `OnBootstrap` via `HookedSingleton`.
