@@ -45,7 +45,11 @@ func runNew(cmd *cobra.Command, args []string) error {
 	projectName := args[0]
 	modulePath := newModuleFlag
 	if modulePath == "" {
-		modulePath = "github.com/" + projectName
+		var err error
+		modulePath, err = promptModulePath(projectName)
+		if err != nil {
+			return err
+		}
 	}
 
 	data := map[string]string{"ModulePath": modulePath}

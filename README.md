@@ -35,6 +35,8 @@ Scaffolds a new Ligo project into `./my-app/`, runs `go mod tidy`, and initialis
 
 By default generates a minimal project with one Hello endpoint. Use `--full` for the complete boilerplate with users, file upload, and JWT auth. Use `--runner` for a background worker/worker service.
 
+When `--module` is not provided, the CLI prompts "Add org prefix?" (default No). Answering Yes asks for an org name and sets the module path to `github.com/<org>/<name>` instead of `github.com/<name>`.
+
 Every scaffold ships:
 
 - **`CLAUDE.md`** — project conventions: Go + Ligo best practices, do/don't, lint/test toolchain install steps, pre-merge checklist.
@@ -46,7 +48,7 @@ Every scaffold ships:
 ligo new my-app                                      # simple boilerplate (default)
 ligo new my-app --full                               # full boilerplate
 ligo new my-app --runner                             # background worker/runner
-ligo new my-app --module github.com/acme/my-app      # custom module path
+ligo new my-app --module github.com/acme/my-app      # custom module path (skips org prompt)
 ligo new my-app --no-git                             # skip git init
 ligo new my-app --pre-release                        # use local ../ligo sibling dirs
 ```
@@ -154,7 +156,9 @@ Scaffolds a new Ligo extension module into `./my-extension/`, following the stru
 ```bash
 ligo nm
 # ? Extension name: myext
-# ? Go module path: github.com/myext
+# ? Add org prefix? (y/N)
+#   → Yes: ? Org name: acme  → github.com/acme/myext
+#   → No:  github.com/myext
 ```
 
 **Flags:**

@@ -48,11 +48,55 @@ func runNewModule(cmd *cobra.Command, args []string) error {
 		name = args[0]
 		modulePath = newModuleModuleFlag
 		if modulePath == "" {
-			modulePath = "github.com/" + name
+			var err error
+			modulePath, err = promptModulePath(name)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return scaffoldExtensionModule(name, modulePath)
+}
+
+func promptModulePath(name string) (string, error) {
+	var addOrg bool
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Add org prefix?").
+				Negative("No").
+				Affirmative("Yes").
+				Value(&addOrg),
+		),
+	)
+	if err := form.Run(); err != nil {
+		return "", err
+	}
+
+	if !addOrg {
+		return "github.com/" + name, nil
+	}
+
+	var org string
+	orgForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Org name").
+				Value(&org).
+				Validate(func(s string) error {
+					if s == "" {
+						return fmt.Errorf("org name cannot be empty")
+					}
+					return nil
+				}),
+		),
+	)
+	if err := orgForm.Run(); err != nil {
+		return "", err
+	}
+
+	return "github.com/" + org + "/" + name, nil
 }
 
 func promptForModule(name, modulePath *string) error {
@@ -68,20 +112,17 @@ func promptForModule(name, modulePath *string) error {
 					return nil
 				}),
 		),
-		huh.NewGroup(
-			huh.NewInput().
-				Title("Go module path").
-				Placeholder("github.com/myext").
-				Value(modulePath).
-				Validate(func(s string) error {
-					if s == "" {
-						return fmt.Errorf("module path cannot be empty")
-					}
-					return nil
-				}),
-		),
 	)
-	return form.Run()
+	if err := form.Run(); err != nil {
+		return err
+	}
+
+	path, err := promptModulePath(*name)
+	if err != nil {
+		return err
+	}
+	*modulePath = path
+	return nil
 }
 
 func scaffoldExtensionModule(name, modulePath string) error {
